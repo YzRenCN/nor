@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nor - Header Replica</title>
+    <style>
+        /* 全局重置 */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background-color: #ffffff;
+        }
+
+        /* 顶部导航栏容器 */
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            height: 80px; /* 根据图片目测的高度 */
+            padding: 0 40px; /* 左右留白 */
+            border-bottom: 1px solid #000000; /* 底部的黑色细线 */
+            background-color: #fff;
+        }
+
+        /* 左侧 Logo 区域 */
+        .logo-section {
+            display: flex;
+            align-items: center;
+            text-decoration: none;
+        }
+
+        /* 图标样式 */
+        .logo-icon {
+            height: 50px; /* 图标高度 */
+            width: auto;
+            margin-right: 15px; /* 图标和文字的间距 */
+        }
+
+        /* 文字 "Nor" 样式 */
+        .logo-text {
+            font-size: 32px;
+            font-weight: 800; /* 加粗 */
+            color: #3b4cca; /* 提取的蓝色近似值 */
+            letter-spacing: 0.5px;
+        }
+
+        /* 右侧菜单区域 */
+        .nav-links {
+            display: flex;
+            gap: 30px; /* 两个菜单项之间的间距 */
+        }
+
+        /* 菜单文字样式 */
+        .nav-links a {
+            text-decoration: none;
+            font-size: 28px;
+            font-weight: 700;
+            color: #3b4cca; /* 与Logo同色 */
+        }
+
+        /* 鼠标悬停效果（可选） */
+        .nav-links a:hover {
+            opacity: 0.8;
+        }
+
+    </style>
+</head>
+<body>
+
+    <!-- 导航栏 -->
+    <header class="navbar">
+        <!-- 左侧：图标 + 文字 -->
+        <div class="logo-section">
+            <!-- 请确保图片文件名为 logo.png，并放在同一目录下 -->
+            <!-- 如果您想用网络图片，请替换 src 的地址 -->
+            <img src="logo.png" alt="Nor Logo" class="logo-icon">
+            <span class="logo-text">Nor</span>
+        </div>
+
+        <!-- 右侧：菜单 -->
+        <nav class="nav-links">
+            <a href="#">更多</a>
+            <a href="#">关于</a>
+        </nav>
+    </header>
+
+</body>
+</html>
