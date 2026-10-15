@@ -1,0 +1,1475 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nor Arts - 画图</title>
+    <style>
+        :root {
+            --primary: #3b4cca;
+            --primary-text: #3b4cca;
+            --bg: #ffffff;
+            --bg-alt: #f1f1f1;
+            --border: #000000;
+            --text: #000000;
+            --text-muted: #666666;
+            --hover: #e8e8ff;
+            --active: #d0d0ff;
+            --ribbon-bg: #f1f1f1;
+            --statusbar-bg: #f1f1f1;
+            --palette-bg: #f1f1f1;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, "PingFang SC", "Microsoft YaHei", Arial, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        /* ================= 顶部导航栏 ================= */
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            height: 48px;
+            padding: 0 20px;
+            border-bottom: 2px solid var(--border);
+            background-color: var(--bg);
+            flex-shrink: 0;
+            gap: 16px;
+            overflow: hidden;
+            transition: height 0.3s ease, padding 0.3s ease,
+                        border-bottom-width 0.3s ease, opacity 0.3s ease;
+        }
+
+        .navbar.collapsed {
+            height: 0;
+            padding-top: 0;
+            padding-bottom: 0;
+            border-bottom-width: 0;
+            opacity: 0;
+        }
+
+        .navbar.collapsed .logo-section,
+        .navbar.collapsed .nav-right {
+            visibility: hidden;
+        }
+
+        .logo-section {
+            display: flex;
+            align-items: center;
+            text-decoration: none;
+            flex-shrink: 0;
+        }
+
+        .logo-icon {
+            height: 28px;
+            width: auto;
+            margin-right: 8px;
+            display: block;
+            flex-shrink: 0;
+        }
+
+        .logo-text {
+            font-size: 18px;
+            font-weight: 900;
+            color: var(--primary-text);
+            letter-spacing: 0.3px;
+            white-space: nowrap;
+        }
+
+        .nav-right {
+            display: flex;
+            align-items: center;
+            gap: 18px;
+            flex-wrap: wrap;
+            justify-content: flex-end;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 18px;
+            flex-wrap: wrap;
+            justify-content: flex-end;
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            font-size: 15px;
+            font-weight: 700;
+            color: var(--primary-text);
+            white-space: nowrap;
+        }
+
+        .nav-links a:hover { opacity: 0.8; }
+
+        .icon-btn {
+            background-color: var(--bg);
+            border: 2px solid var(--primary);
+            border-radius: 4px;
+            color: var(--primary-text);
+            font-family: inherit;
+            font-size: 13px;
+            line-height: 1;
+            font-weight: 700;
+            cursor: pointer;
+            padding: 4px 9px;
+            transition: all 0.15s ease;
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+
+        .icon-btn:hover { background-color: var(--hover); }
+        .icon-btn:active { background-color: var(--active); }
+
+        /* ================= 功能区 ================= */
+        .ribbon {
+            display: flex;
+            align-items: stretch;
+            background-color: var(--ribbon-bg);
+            border-bottom: 2px solid var(--border);
+            flex-shrink: 0;
+            flex-wrap: wrap;
+            transition: background-color 0.3s ease;
+        }
+
+        .ribbon-group {
+            display: flex;
+            flex-direction: column;
+            padding: 4px 12px 4px;
+            border-right: 1px solid #cccccc;
+            align-items: center;
+        }
+
+        .ribbon-group:last-child { border-right: none; }
+
+        .ribbon-group-title {
+            font-size: 10px;
+            color: var(--text-muted);
+            margin-top: 2px;
+            font-weight: 500;
+            letter-spacing: 0.5px;
+        }
+
+        .ribbon-row {
+            display: flex;
+            gap: 4px;
+            align-items: center;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .ribbon-btn {
+            background-color: transparent;
+            border: 1px solid transparent;
+            border-radius: 3px;
+            color: var(--text);
+            font-family: inherit;
+            font-size: 12px;
+            font-weight: 500;
+            cursor: pointer;
+            padding: 6px 8px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 2px;
+            min-width: 48px;
+            transition: all 0.1s ease;
+            white-space: nowrap;
+        }
+
+        .ribbon-btn:hover {
+            background-color: var(--hover);
+            border-color: var(--primary);
+        }
+
+        .ribbon-btn:active { background-color: var(--active); }
+
+        .ribbon-btn.active {
+            background-color: var(--primary);
+            color: #ffffff;
+            border-color: var(--primary);
+        }
+
+        .ribbon-btn .ribbon-icon {
+            font-size: 16px;
+            line-height: 1;
+        }
+
+        .ribbon-btn .ribbon-label {
+            font-size: 10px;
+            color: inherit;
+        }
+
+        /* ================= 主区域 ================= */
+        .workspace {
+            flex: 1;
+            display: flex;
+            overflow: hidden;
+            background-color: var(--bg);
+        }
+
+        .tool-panel {
+            width: 48px;
+            background-color: var(--ribbon-bg);
+            border-right: 2px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            padding: 6px 0;
+            gap: 4px;
+            align-items: center;
+            flex-shrink: 0;
+            transition: background-color 0.3s ease;
+        }
+
+        .tool-btn {
+            width: 36px;
+            height: 36px;
+            background-color: transparent;
+            border: 1px solid transparent;
+            border-radius: 3px;
+            color: var(--text);
+            font-size: 18px;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: all 0.1s ease;
+            padding: 0;
+        }
+
+        .tool-btn:hover {
+            background-color: var(--hover);
+            border-color: var(--primary);
+        }
+
+        .tool-btn.active {
+            background-color: var(--primary);
+            color: #ffffff;
+            border-color: var(--primary);
+        }
+
+        .tool-divider {
+            width: 28px;
+            height: 1px;
+            background-color: #cccccc;
+            margin: 4px 0;
+        }
+
+        /* ================= 画布区域 ================= */
+        .canvas-panel {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .canvas-area {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            overflow: auto;
+            background-color: #808080;
+            transition: background-color 0.3s ease;
+            position: relative;
+        }
+
+        .canvas-container {
+            position: relative;
+            border: 2px solid var(--border);
+            background-color: #ffffff;
+            box-shadow: 3px 3px 8px rgba(0, 0, 0, 0.4);
+            overflow: hidden;
+            flex-shrink: 0;  /* 不因容器收缩而变形，1:1 显示像素 */
+        }
+
+        .drawing-canvas {
+            display: block;
+            cursor: crosshair;
+            background-color: #ffffff;
+            touch-action: none;
+            /* 1:1 像素显示，不缩放 */
+        }
+
+        /* 右下角拖拽调整尺寸手柄 */
+        .resize-handle {
+            position: absolute;
+            right: 0;
+            bottom: 0;
+            width: 20px;
+            height: 20px;
+            cursor: nwse-resize;
+            background:
+                linear-gradient(135deg, transparent 50%, var(--primary) 50%),
+                linear-gradient(135deg, transparent 70%, var(--primary) 70%);
+            z-index: 10;
+            user-select: none;
+            touch-action: none;
+        }
+
+        .resize-handle:hover { opacity: 0.8; }
+
+        .resize-badge {
+            position: absolute;
+            top: 8px;
+            left: 8px;
+            background-color: rgba(0, 0, 0, 0.75);
+            color: #ffffff;
+            font-size: 12px;
+            font-weight: 700;
+            font-family: "Consolas", "Monaco", monospace;
+            padding: 4px 10px;
+            border-radius: 4px;
+            z-index: 20;
+            display: none;
+            pointer-events: none;
+            white-space: nowrap;
+        }
+
+        .resize-badge.visible { display: block; }
+
+        /* ================= 缩放控制栏 ================= */
+        .zoom-bar {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 6px;
+            background-color: var(--ribbon-bg);
+            border-top: 2px solid var(--border);
+            padding: 6px 12px;
+            flex-shrink: 0;
+            flex-wrap: wrap;
+            transition: background-color 0.3s ease;
+        }
+
+        .zoom-btn {
+            background-color: var(--bg);
+            border: 2px solid var(--primary);
+            border-radius: 3px;
+            color: var(--primary-text);
+            font-family: inherit;
+            font-size: 12px;
+            font-weight: 700;
+            cursor: pointer;
+            padding: 4px 10px;
+            transition: all 0.1s ease;
+            white-space: nowrap;
+            min-width: 32px;
+        }
+
+        .zoom-btn:hover { background-color: var(--hover); }
+        .zoom-btn:active { background-color: var(--active); }
+
+        .zoom-btn.zoom-text {
+            min-width: 60px;
+            font-family: "Consolas", "Monaco", monospace;
+        }
+
+        .zoom-label {
+            font-size: 11px;
+            color: var(--text-muted);
+            margin-right: 4px;
+        }
+
+        /* ================= 颜色板 ================= */
+        .palette {
+            display: flex;
+            align-items: center;
+            background-color: var(--palette-bg);
+            border-top: 2px solid var(--border);
+            padding: 6px 12px;
+            gap: 8px;
+            flex-shrink: 0;
+            flex-wrap: wrap;
+            transition: background-color 0.3s ease;
+        }
+
+        .palette-label {
+            font-size: 11px;
+            color: var(--text-muted);
+            font-weight: 500;
+            white-space: nowrap;
+        }
+
+        .palette-current {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            margin-right: 6px;
+        }
+
+        .palette-current-color {
+            width: 28px;
+            height: 28px;
+            border: 2px solid var(--border);
+            border-radius: 3px;
+            background-color: #000000;
+            cursor: pointer;
+        }
+
+        .palette-colors {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 3px;
+        }
+
+        .swatch {
+            width: 20px;
+            height: 20px;
+            border: 1px solid #999999;
+            border-radius: 2px;
+            cursor: pointer;
+            padding: 0;
+            transition: transform 0.1s ease;
+        }
+
+        .swatch:hover {
+            transform: scale(1.2);
+            border-color: var(--primary);
+        }
+
+        .swatch.active {
+            border: 2px solid var(--primary);
+            box-shadow: 0 0 0 1px #ffffff inset;
+        }
+
+        /* ================= 状态栏 ================= */
+        .status-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: var(--statusbar-bg);
+            border-top: 2px solid var(--border);
+            padding: 4px 12px;
+            font-size: 11px;
+            color: var(--text-muted);
+            flex-shrink: 0;
+            flex-wrap: wrap;
+            gap: 8px;
+            transition: background-color 0.3s ease;
+        }
+
+        .status-bar .status-item { white-space: nowrap; }
+
+        .status-bar .status-item strong {
+            color: var(--text);
+            font-weight: 700;
+        }
+
+        /* ================= 主题面板 ================= */
+        .theme-toggle-btn {
+            background-color: var(--bg);
+            border: 2px solid var(--primary);
+            border-radius: 4px;
+            color: var(--primary-text);
+            font-size: 13px;
+            line-height: 1;
+            font-weight: 700;
+            cursor: pointer;
+            padding: 4px 9px;
+        }
+
+        .theme-toggle-btn:hover { background-color: var(--hover); }
+
+        .theme-panel {
+            display: none;
+            position: absolute;
+            top: 50px;
+            right: 20px;
+            background-color: var(--bg);
+            border: 2px solid var(--border);
+            border-radius: 4px;
+            padding: 10px 12px;
+            box-shadow: 3px 3px 8px rgba(0, 0, 0, 0.3);
+            z-index: 100;
+            gap: 8px;
+            flex-wrap: wrap;
+            max-width: 260px;
+        }
+
+        .theme-panel.open { display: flex; }
+
+        .theme-dot {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            border: 2px solid #cccccc;
+            cursor: pointer;
+            padding: 0;
+            transition: all 0.15s ease;
+        }
+
+        .theme-dot:hover { transform: scale(1.12); }
+
+        .theme-dot.active {
+            border-color: #000000;
+            box-shadow: 0 0 0 2px var(--bg), 0 0 0 4px currentColor;
+        }
+
+        .theme-dot[data-theme="blue"]   { background-color: #3b4cca; color: #3b4cca; }
+        .theme-dot[data-theme="red"]    { background-color: #e63946; color: #e63946; }
+        .theme-dot[data-theme="green"]  { background-color: #2a9d8f; color: #2a9d8f; }
+        .theme-dot[data-theme="orange"] { background-color: #e76f51; color: #e76f51; }
+        .theme-dot[data-theme="purple"] { background-color: #8e44ad; color: #8e44ad; }
+        .theme-dot[data-theme="dark"]   { background-color: #1a1a1a; color: #888888; }
+
+        .hidden-file-input { display: none; }
+
+        /* ================= 打印样式 ================= */
+        @media print {
+            body { background-color: #ffffff; min-height: auto; }
+            .navbar, .ribbon, .tool-panel, .palette, .status-bar, .zoom-bar { display: none !important; }
+            .workspace { background-color: #ffffff; }
+            .canvas-area { padding: 0; background-color: #ffffff; overflow: visible; }
+            .canvas-container { border: none; box-shadow: none; transform: none !important; }
+            .resize-handle { display: none !important; }
+            .print-content { display: block !important; text-align: center; }
+            .print-content img { max-width: 100%; }
+        }
+
+        .print-content { display: none; }
+
+        /* ================= 手机端适配 ================= */
+        @media (max-width: 768px) {
+            .navbar {
+                flex-direction: column;
+                height: auto;
+                padding: 8px 12px;
+                gap: 4px;
+            }
+            .navbar.collapsed { height: 0; padding-top: 0; padding-bottom: 0; border-bottom-width: 0; }
+            .logo-section { width: 100%; justify-content: center; }
+            .logo-icon { height: 24px; margin-right: 6px; }
+            .logo-text { font-size: 16px; }
+            .nav-right { width: 100%; justify-content: center; gap: 10px; }
+            .nav-links { justify-content: center; gap: 12px; }
+            .nav-links a { font-size: 13px; padding: 2px 0; }
+            .ribbon { overflow-x: auto; flex-wrap: nowrap; }
+            .ribbon-group { padding: 4px 8px; flex-shrink: 0; }
+            .ribbon-btn { min-width: 40px; padding: 4px 6px; }
+            .ribbon-btn .ribbon-icon { font-size: 14px; }
+            .ribbon-btn .ribbon-label { font-size: 9px; }
+            .tool-panel { width: 42px; }
+            .tool-btn { width: 32px; height: 32px; font-size: 16px; }
+            .palette { padding: 4px 8px; gap: 6px; }
+            .palette-current-color { width: 24px; height: 24px; }
+            .swatch { width: 18px; height: 18px; }
+            .status-bar { font-size: 10px; padding: 3px 8px; }
+            .resize-handle { width: 24px; height: 24px; }
+            .zoom-bar { padding: 4px 8px; gap: 4px; }
+            .zoom-btn { padding: 3px 8px; font-size: 11px; }
+            .canvas-area { padding: 10px; }
+        }
+
+        @media (max-width: 380px) {
+            .logo-text { font-size: 14px; }
+            .nav-links a { font-size: 12px; }
+            .ribbon-btn { min-width: 36px; padding: 3px 4px; }
+            .ribbon-btn .ribbon-icon { font-size: 13px; }
+            .ribbon-btn .ribbon-label { font-size: 8px; }
+            .tool-btn { width: 30px; height: 30px; font-size: 15px; }
+            .swatch { width: 16px; height: 16px; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- 导航栏 -->
+    <header class="navbar" id="navbar">
+        <div class="logo-section">
+            <img src="*" alt="Nor Arts Logo" class="logo-icon">
+            <span class="logo-text">Nor Arts 画图</span>
+        </div>
+        <div class="nav-right">
+            <nav class="nav-links">
+                <a href="#">Draw</a>
+                <a href="#">更多工具</a>
+                <a href="#">返回</a>
+                <a href="#">主页</a>
+            </nav>
+            <button class="icon-btn" id="collapseBtn" title="收缩导航栏">▲</button>
+        </div>
+    </header>
+
+    <!-- 功能区 -->
+    <div class="ribbon">
+        <div class="ribbon-group">
+            <div class="ribbon-row">
+                <button class="ribbon-btn" id="importBtn" title="导入图片">
+                    <span class="ribbon-icon">📂</span>
+                    <span class="ribbon-label">导入</span>
+                </button>
+                <button class="ribbon-btn" id="downloadBtn" title="另存为 PNG">
+                    <span class="ribbon-icon">💾</span>
+                    <span class="ribbon-label">保存</span>
+                </button>
+                <button class="ribbon-btn" id="printBtn" title="打印">
+                    <span class="ribbon-icon">🖨️</span>
+                    <span class="ribbon-label">打印</span>
+                </button>
+            </div>
+            <div class="ribbon-group-title">文件</div>
+        </div>
+
+        <div class="ribbon-group">
+            <div class="ribbon-row">
+                <button class="ribbon-btn" id="undoBtn" title="撤销上一步">
+                    <span class="ribbon-icon">↶</span>
+                    <span class="ribbon-label">撤销</span>
+                </button>
+                <button class="ribbon-btn" id="clearBtn" title="清空画布">
+                    <span class="ribbon-icon">🗑️</span>
+                    <span class="ribbon-label">清空</span>
+                </button>
+            </div>
+            <div class="ribbon-group-title">编辑</div>
+        </div>
+
+        <div class="ribbon-group">
+            <div class="ribbon-row">
+                <button class="ribbon-btn" id="brushSmall" title="细笔">
+                    <span class="ribbon-icon">•</span>
+                    <span class="ribbon-label">细</span>
+                </button>
+                <button class="ribbon-btn active" id="brushMedium" title="中笔">
+                    <span class="ribbon-icon">●</span>
+                    <span class="ribbon-label">中</span>
+                </button>
+                <button class="ribbon-btn" id="brushLarge" title="粗笔">
+                    <span class="ribbon-icon">⬤</span>
+                    <span class="ribbon-label">粗</span>
+                </button>
+            </div>
+            <div class="ribbon-group-title">笔刷</div>
+        </div>
+
+        <div class="ribbon-group" style="margin-left: auto; border-right: none; justify-content: flex-end;">
+            <div class="ribbon-row">
+                <button class="ribbon-btn" id="expandBtn" title="展开导航栏" style="display: none;">
+                    <span class="ribbon-icon">▼</span>
+                    <span class="ribbon-label">展开</span>
+                </button>
+                <button class="ribbon-btn" id="themeToggleBtn" title="主题颜色">
+                    <span class="ribbon-icon">🎨</span>
+                    <span class="ribbon-label">主题</span>
+                </button>
+            </div>
+            <div class="ribbon-group-title">外观</div>
+        </div>
+    </div>
+
+    <!-- 主题面板 -->
+    <div class="theme-panel" id="themePanel">
+        <button class="theme-dot active" data-theme="blue"   title="经典蓝"></button>
+        <button class="theme-dot"        data-theme="red"    title="珊瑚红"></button>
+        <button class="theme-dot"        data-theme="green"  title="森林绿"></button>
+        <button class="theme-dot"        data-theme="orange" title="落日橙"></button>
+        <button class="theme-dot"        data-theme="purple" title="典雅紫"></button>
+        <button class="theme-dot"        data-theme="dark"   title="夜间模式"></button>
+    </div>
+
+    <!-- 主区域 -->
+    <div class="workspace">
+        <div class="tool-panel">
+            <button class="tool-btn active" data-tool="pen"   title="画笔">✏️</button>
+            <button class="tool-btn"        data-tool="eraser" title="橡皮擦">🧽</button>
+            <div class="tool-divider"></div>
+            <button class="tool-btn" data-tool="line"   title="直线">╱</button>
+            <button class="tool-btn" data-tool="rect"   title="矩形">▭</button>
+            <button class="tool-btn" data-tool="circle" title="圆形">◯</button>
+        </div>
+
+        <!-- 画布面板 -->
+        <div class="canvas-panel">
+            <div class="canvas-area" id="canvasArea">
+                <div class="canvas-container" id="canvasContainer">
+                    <canvas id="drawingCanvas" class="drawing-canvas"></canvas>
+                    <div class="resize-badge" id="resizeBadge">800 × 500</div>
+                    <div class="resize-handle" id="resizeHandle" title="拖动调整画布尺寸"></div>
+                </div>
+            </div>
+
+            <!-- 缩放控制栏 -->
+            <div class="zoom-bar">
+                <span class="zoom-label">缩放：</span>
+                <button class="zoom-btn" id="zoomOutBtn" title="缩小">➖</button>
+                <button class="zoom-btn zoom-text" id="zoomResetBtn" title="恢复 100%">100%</button>
+                <button class="zoom-btn" id="zoomInBtn" title="放大">➕</button>
+                <button class="zoom-btn" id="zoomFitBtn" title="适应窗口">🔍 适应窗口</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 颜色板 -->
+    <div class="palette">
+        <div class="palette-current">
+            <span class="palette-label">当前颜色</span>
+            <div class="palette-current-color" id="currentColor" title="点击自定义颜色"></div>
+        </div>
+        <div class="palette-colors" id="paletteColors"></div>
+    </div>
+
+    <!-- 状态栏 -->
+    <div class="status-bar">
+        <span class="status-item">工具：<strong id="statusTool">画笔</strong></span>
+        <span class="status-item">画布：<strong id="statusSize">800 × 500</strong></span>
+        <span class="status-item">缩放：<strong id="statusZoom">100%</strong></span>
+        <span class="status-item">鼠标：<strong id="statusPos">0, 0</strong></span>
+        <span class="status-item" id="statusSave">准备就绪</span>
+    </div>
+
+    <input type="file" id="fileInput" class="hidden-file-input" accept="image/*">
+    <div class="print-content" id="printContent"></div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // ================= DOM =================
+            const navbar = document.getElementById('navbar');
+            const collapseBtn = document.getElementById('collapseBtn');
+            const expandBtn = document.getElementById('expandBtn');
+            const themeToggleBtn = document.getElementById('themeToggleBtn');
+            const themePanel = document.getElementById('themePanel');
+            const clearBtn = document.getElementById('clearBtn');
+            const undoBtn = document.getElementById('undoBtn');
+            const downloadBtn = document.getElementById('downloadBtn');
+            const importBtn = document.getElementById('importBtn');
+            const printBtn = document.getElementById('printBtn');
+            const brushSmall = document.getElementById('brushSmall');
+            const brushMedium = document.getElementById('brushMedium');
+            const brushLarge = document.getElementById('brushLarge');
+            const currentColor = document.getElementById('currentColor');
+            const paletteColors = document.getElementById('paletteColors');
+            const statusTool = document.getElementById('statusTool');
+            const statusSize = document.getElementById('statusSize');
+            const statusZoom = document.getElementById('statusZoom');
+            const statusPos = document.getElementById('statusPos');
+            const statusSave = document.getElementById('statusSave');
+            const canvas = document.getElementById('drawingCanvas');
+            const ctx = canvas.getContext('2d');
+            const fileInput = document.getElementById('fileInput');
+            const printContent = document.getElementById('printContent');
+            const toolBtns = document.querySelectorAll('.tool-btn');
+            const resizeHandle = document.getElementById('resizeHandle');
+            const resizeBadge = document.getElementById('resizeBadge');
+            const canvasContainer = document.getElementById('canvasContainer');
+            const canvasArea = document.getElementById('canvasArea');
+            const zoomInBtn = document.getElementById('zoomInBtn');
+            const zoomOutBtn = document.getElementById('zoomOutBtn');
+            const zoomResetBtn = document.getElementById('zoomResetBtn');
+            const zoomFitBtn = document.getElementById('zoomFitBtn');
+
+            const THEME_KEY = 'nor_arts_theme';
+            const DRAWING_KEY = 'nor_arts_drawing';
+            const BRUSH_COLOR_KEY = 'nor_arts_brush_color';
+            const BRUSH_SIZE_KEY = 'nor_arts_brush_size';
+            const BG_IMAGE_KEY = 'nor_arts_bg_image';
+            const CANVAS_SIZE_KEY = 'nor_arts_canvas_size';
+            const ZOOM_KEY = 'nor_arts_zoom';
+
+            // ================= 主题配置 =================
+            const THEMES = {
+                blue:   { primary: '#3b4cca', primaryText: '#3b4cca', bg: '#ffffff', border: '#000000', text: '#000000', textMuted: '#666666', hover: '#e8e8ff', active: '#d0d0ff', ribbon: '#f1f1f1', statusbar: '#f1f1f1', palette: '#f1f1f1' },
+                red:    { primary: '#e63946', primaryText: '#e63946', bg: '#fffafa', border: '#8b0000', text: '#1a1a1a', textMuted: '#a87070', hover: '#ffe5e7', active: '#ffd0d3', ribbon: '#ffecee', statusbar: '#ffecee', palette: '#ffecee' },
+                green:  { primary: '#2a9d8f', primaryText: '#2a9d8f', bg: '#f6fdfb', border: '#0b4a40', text: '#1a1a1a', textMuted: '#6a8a85', hover: '#dff5f2', active: '#c8ebe6', ribbon: '#e4f5f2', statusbar: '#e4f5f2', palette: '#e4f5f2' },
+                orange: { primary: '#e76f51', primaryText: '#b54a2e', bg: '#fff9f5', border: '#7a2e15', text: '#1a1a1a', textMuted: '#a87860', hover: '#fdeae4', active: '#fbd8cd', ribbon: '#fdeee7', statusbar: '#fdeee7', palette: '#fdeee7' },
+                purple: { primary: '#8e44ad', primaryText: '#8e44ad', bg: '#fcf7ff', border: '#3d1652', text: '#1a1a1a', textMuted: '#8a70a0', hover: '#f3e5fa', active: '#e7cff3', ribbon: '#f3e5fa', statusbar: '#f3e5fa', palette: '#f3e5fa' },
+                dark:   { primary: '#7c8dff', primaryText: '#9aa8ff', bg: '#121212', border: '#888888', text: '#e8e8e8', textMuted: '#888888', hover: '#2a2a3a', active: '#3a3a4a', ribbon: '#1e1e1e', statusbar: '#1e1e1e', palette: '#1e1e1e' }
+            };
+
+            function applyTheme(name) {
+                const t = THEMES[name];
+                if (!t) return;
+                const r = document.documentElement.style;
+                r.setProperty('--primary', t.primary);
+                r.setProperty('--primary-text', t.primaryText);
+                r.setProperty('--bg', t.bg);
+                r.setProperty('--border', t.border);
+                r.setProperty('--text', t.text);
+                r.setProperty('--text-muted', t.textMuted);
+                r.setProperty('--hover', t.hover);
+                r.setProperty('--active', t.active);
+                r.setProperty('--ribbon-bg', t.ribbon);
+                r.setProperty('--statusbar-bg', t.statusbar);
+                r.setProperty('--palette-bg', t.palette);
+                themePanel.querySelectorAll('.theme-dot').forEach(d =>
+                    d.classList.toggle('active', d.dataset.theme === name));
+                try { localStorage.setItem(THEME_KEY, name); } catch (e) {}
+            }
+
+            let savedTheme = 'blue';
+            try { savedTheme = localStorage.getItem(THEME_KEY) || 'blue'; } catch (e) {}
+            applyTheme(savedTheme);
+
+            // ================= 颜色板 =================
+            const PALETTE_COLORS = [
+                '#000000', '#7f7f7f', '#880015', '#ed1c24', '#ff7f27', '#fff200',
+                '#22b14c', '#00a2e8', '#3f48cc', '#a349a4', '#ffffff', '#c3c3c3',
+                '#b97a57', '#ffaec9', '#ffc90e', '#efe4b0', '#b5e61d', '#99d9ea',
+                '#7092be', '#c8bfe7'
+            ];
+
+            let brushColor = '#000000';
+            try {
+                const savedColor = localStorage.getItem(BRUSH_COLOR_KEY);
+                if (savedColor) brushColor = savedColor;
+            } catch (e) {}
+            updateCurrentColor();
+
+            function updateCurrentColor() {
+                currentColor.style.backgroundColor = brushColor;
+            }
+
+            PALETTE_COLORS.forEach(color => {
+                const swatch = document.createElement('button');
+                swatch.className = 'swatch';
+                swatch.style.backgroundColor = color;
+                swatch.dataset.color = color;
+                swatch.title = color;
+                if (color === brushColor) swatch.classList.add('active');
+                swatch.addEventListener('click', () => {
+                    brushColor = color;
+                    updateCurrentColor();
+                    document.querySelectorAll('.swatch').forEach(s => s.classList.remove('active'));
+                    swatch.classList.add('active');
+                    try { localStorage.setItem(BRUSH_COLOR_KEY, brushColor); } catch (e) {}
+                    if (currentTool === 'eraser') setTool('pen');
+                });
+                paletteColors.appendChild(swatch);
+            });
+
+            currentColor.addEventListener('click', () => {
+                const input = document.createElement('input');
+                input.type = 'color';
+                input.value = brushColor;
+                input.style.position = 'fixed';
+                input.style.left = '-100px';
+                document.body.appendChild(input);
+                input.click();
+                input.addEventListener('input', () => {
+                    brushColor = input.value;
+                    updateCurrentColor();
+                    document.querySelectorAll('.swatch').forEach(s => s.classList.remove('active'));
+                    try { localStorage.setItem(BRUSH_COLOR_KEY, brushColor); } catch (e) {}
+                });
+                input.addEventListener('change', () => {
+                    document.body.removeChild(input);
+                });
+            });
+
+            // ================= 工具 =================
+            let currentTool = 'pen';
+            let brushSize = 4;
+            try {
+                const savedSize = parseInt(localStorage.getItem(BRUSH_SIZE_KEY));
+                if (savedSize) brushSize = savedSize;
+            } catch (e) {}
+            updateBrushButtons();
+
+            function setTool(tool) {
+                currentTool = tool;
+                toolBtns.forEach(b => b.classList.toggle('active', b.dataset.tool === tool));
+                const labels = { pen: '画笔', eraser: '橡皮擦', line: '直线', rect: '矩形', circle: '圆形' };
+                statusTool.textContent = labels[tool] || tool;
+                canvas.style.cursor = tool === 'eraser' ? 'cell' : 'crosshair';
+            }
+
+            toolBtns.forEach(btn => {
+                btn.addEventListener('click', () => setTool(btn.dataset.tool));
+            });
+
+            function updateBrushButtons() {
+                brushSmall.classList.remove('active');
+                brushMedium.classList.remove('active');
+                brushLarge.classList.remove('active');
+                if (brushSize <= 2) brushSmall.classList.add('active');
+                else if (brushSize <= 6) brushMedium.classList.add('active');
+                else brushLarge.classList.add('active');
+            }
+
+            brushSmall.addEventListener('click', () => { brushSize = 2; updateBrushButtons(); try { localStorage.setItem(BRUSH_SIZE_KEY, brushSize); } catch (e) {} });
+            brushMedium.addEventListener('click', () => { brushSize = 4; updateBrushButtons(); try { localStorage.setItem(BRUSH_SIZE_KEY, brushSize); } catch (e) {} });
+            brushLarge.addEventListener('click', () => { brushSize = 12; updateBrushButtons(); try { localStorage.setItem(BRUSH_SIZE_KEY, brushSize); } catch (e) {} });
+
+            // ================= 画布尺寸 =================
+            let canvasBaseSize = { w: 800, h: 500 };
+            try {
+                const savedSize = JSON.parse(localStorage.getItem(CANVAS_SIZE_KEY));
+                if (savedSize && savedSize.w && savedSize.h) {
+                    canvasBaseSize = savedSize;
+                }
+            } catch (e) {}
+
+            // ================= 缩放（100% = 1:1 像素） =================
+            let zoomLevel = 1.0;
+            try {
+                const savedZoom = parseFloat(localStorage.getItem(ZOOM_KEY));
+                if (savedZoom && savedZoom >= 0.1 && savedZoom <= 4) zoomLevel = savedZoom;
+            } catch (e) {}
+
+            function updateZoomDisplay() {
+                const percent = Math.round(zoomLevel * 100);
+                zoomResetBtn.textContent = percent + '%';
+                statusZoom.textContent = percent + '%';
+            }
+
+            /**
+             * 应用当前缩放：
+             * 100% 缩放时，画布按实际像素 1:1 显示（800 像素 = 800 屏幕像素）
+             * 超出可视区域时自动出现滚动条
+             */
+            function applyZoom() {
+                const displayW = Math.floor(canvasBaseSize.w * zoomLevel);
+                const displayH = Math.floor(canvasBaseSize.h * zoomLevel);
+
+                canvasContainer.style.width = displayW + 'px';
+                canvasContainer.style.height = displayH + 'px';
+                canvas.style.width = displayW + 'px';
+                canvas.style.height = displayH + 'px';
+
+                statusSize.textContent = `${canvasBaseSize.w} × ${canvasBaseSize.h}`;
+                updateZoomDisplay();
+            }
+
+            function fitToWindow() {
+                // 计算当前可视区域能容纳的缩放比例，使得画布完整显示在可视区域内
+                const padding = 40; // 边距
+                const areaW = canvasArea.clientWidth - padding;
+                const areaH = canvasArea.clientHeight - padding;
+                const fitW = areaW / canvasBaseSize.w;
+                const fitH = areaH / canvasBaseSize.h;
+                // 取较小值，保证画布完整显示
+                let fit = Math.min(fitW, fitH);
+                // 限制范围
+                fit = Math.max(0.1, Math.min(4, fit));
+                // 保留两位小数
+                zoomLevel = Math.round(fit * 100) / 100;
+                applyZoom();
+                try { localStorage.setItem(ZOOM_KEY, zoomLevel); } catch (e) {}
+            }
+
+            zoomInBtn.addEventListener('click', () => {
+                zoomLevel = Math.min(4, Math.round((zoomLevel + 0.1) * 100) / 100);
+                applyZoom();
+                try { localStorage.setItem(ZOOM_KEY, zoomLevel); } catch (e) {}
+            });
+
+            zoomOutBtn.addEventListener('click', () => {
+                zoomLevel = Math.max(0.1, Math.round((zoomLevel - 0.1) * 100) / 100);
+                applyZoom();
+                try { localStorage.setItem(ZOOM_KEY, zoomLevel); } catch (e) {}
+            });
+
+            zoomResetBtn.addEventListener('click', () => {
+                zoomLevel = 1.0;
+                applyZoom();
+                try { localStorage.setItem(ZOOM_KEY, zoomLevel); } catch (e) {}
+            });
+
+            zoomFitBtn.addEventListener('click', fitToWindow);
+
+            // Ctrl + 滚轮缩放
+            canvasArea.addEventListener('wheel', (e) => {
+                if (e.ctrlKey || e.metaKey) {
+                    e.preventDefault();
+                    if (e.deltaY < 0) {
+                        zoomLevel = Math.min(4, Math.round((zoomLevel + 0.1) * 100) / 100);
+                    } else {
+                        zoomLevel = Math.max(0.1, Math.round((zoomLevel - 0.1) * 100) / 100);
+                    }
+                    applyZoom();
+                    try { localStorage.setItem(ZOOM_KEY, zoomLevel); } catch (e) {}
+                }
+            }, { passive: false });
+
+            // ================= 拖拽调整画布尺寸 =================
+            let isResizing = false;
+            let resizeStartX = 0;
+            let resizeStartY = 0;
+            let resizeStartW = 0;
+            let resizeStartH = 0;
+
+            function startResize(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                isResizing = true;
+                const point = e.touches && e.touches.length > 0 ? e.touches[0] : e;
+                resizeStartX = point.clientX;
+                resizeStartY = point.clientY;
+                resizeStartW = canvasBaseSize.w;
+                resizeStartH = canvasBaseSize.h;
+                resizeBadge.textContent = `${canvasBaseSize.w} × ${canvasBaseSize.h}`;
+                resizeBadge.classList.add('visible');
+                document.body.style.userSelect = 'none';
+            }
+
+            function moveResize(e) {
+                if (!isResizing) return;
+                e.preventDefault();
+                const point = e.touches && e.touches.length > 0 ? e.touches[0] : e;
+                const dx = point.clientX - resizeStartX;
+                const dy = point.clientY - resizeStartY;
+
+                // 显示尺寸与实际像素的比例（考虑 zoomLevel）
+                const rect = canvasContainer.getBoundingClientRect();
+                const scaleX = canvasBaseSize.w / rect.width;
+                const scaleY = canvasBaseSize.h / rect.height;
+
+                let newW = Math.round(resizeStartW + dx * scaleX);
+                let newH = Math.round(resizeStartH + dy * scaleY);
+
+                newW = Math.max(200, Math.min(3000, newW));
+                newH = Math.max(125, Math.min(3000, newH));
+
+                canvasBaseSize.w = newW;
+                canvasBaseSize.h = newH;
+                canvas.width = newW;
+                canvas.height = newH;
+
+                applyZoom();
+                redrawFromHistory();
+
+                resizeBadge.textContent = `${newW} × ${newH}`;
+            }
+
+            function endResize(e) {
+                if (!isResizing) return;
+                isResizing = false;
+                resizeBadge.classList.remove('visible');
+                document.body.style.userSelect = '';
+
+                try {
+                    localStorage.setItem(CANVAS_SIZE_KEY, JSON.stringify(canvasBaseSize));
+                } catch (e) {}
+                saveDrawing();
+                statusSave.textContent = `✓ 已调整为 ${canvasBaseSize.w} × ${canvasBaseSize.h}`;
+            }
+
+            resizeHandle.addEventListener('mousedown', startResize);
+            resizeHandle.addEventListener('touchstart', startResize, { passive: false });
+
+            document.addEventListener('mousemove', moveResize);
+            document.addEventListener('touchmove', moveResize, { passive: false });
+
+            document.addEventListener('mouseup', endResize);
+            document.addEventListener('touchend', endResize);
+            document.addEventListener('touchcancel', endResize);
+
+            // ================= 绘图 =================
+            let isDrawing = false;
+            let strokes = [];
+            let currentStroke = null;
+            let startPoint = null;
+            let bgImage = null;
+            let bgImageData = null;
+
+            function redrawFromHistory() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                ctx.fillStyle = '#ffffff';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+                if (bgImage && bgImage.complete) {
+                    drawBackgroundImage(bgImage);
+                }
+
+                strokes.forEach(s => drawStroke(s));
+                if (currentStroke && (currentTool === 'pen' || currentTool === 'eraser')) {
+                    drawStroke(currentStroke);
+                }
+            }
+
+            function drawBackgroundImage(img) {
+                const cRatio = canvas.width / canvas.height;
+                const iRatio = img.width / img.height;
+                let dW, dH, dX, dY;
+                if (iRatio > cRatio) {
+                    dW = canvas.width;
+                    dH = canvas.width / iRatio;
+                    dX = 0;
+                    dY = (canvas.height - dH) / 2;
+                } else {
+                    dH = canvas.height;
+                    dW = canvas.height * iRatio;
+                    dX = (canvas.width - dW) / 2;
+                    dY = 0;
+                }
+                ctx.drawImage(img, dX, dY, dW, dH);
+            }
+
+            function drawStroke(stroke) {
+                if (!stroke.points || stroke.points.length === 0) return;
+                ctx.strokeStyle = stroke.color;
+                ctx.lineWidth = stroke.size;
+                ctx.lineCap = 'round';
+                ctx.lineJoin = 'round';
+
+                if (stroke.points.length === 1) {
+                    const p = stroke.points[0];
+                    ctx.beginPath();
+                    ctx.arc(p.x, p.y, stroke.size / 2, 0, Math.PI * 2);
+                    ctx.fillStyle = stroke.color;
+                    ctx.fill();
+                    return;
+                }
+
+                ctx.beginPath();
+                ctx.moveTo(stroke.points[0].x, stroke.points[0].y);
+                for (let i = 1; i < stroke.points.length; i++) {
+                    ctx.lineTo(stroke.points[i].x, stroke.points[i].y);
+                }
+                ctx.stroke();
+            }
+
+            function drawShapePreview(start, end) {
+                ctx.strokeStyle = brushColor;
+                ctx.lineWidth = brushSize;
+                ctx.lineCap = 'round';
+                ctx.lineJoin = 'round';
+
+                if (currentTool === 'line') {
+                    ctx.beginPath();
+                    ctx.moveTo(start.x, start.y);
+                    ctx.lineTo(end.x, end.y);
+                    ctx.stroke();
+                } else if (currentTool === 'rect') {
+                    ctx.strokeRect(start.x, start.y, end.x - start.x, end.y - start.y);
+                } else if (currentTool === 'circle') {
+                    const cx = (start.x + end.x) / 2;
+                    const cy = (start.y + end.y) / 2;
+                    const rx = Math.abs(end.x - start.x) / 2;
+                    const ry = Math.abs(end.y - start.y) / 2;
+                    ctx.beginPath();
+                    ctx.ellipse(cx, cy, rx, ry, 0, 0, Math.PI * 2);
+                    ctx.stroke();
+                }
+            }
+
+            function getPos(e) {
+                const rect = canvas.getBoundingClientRect();
+                const scaleX = canvas.width / rect.width;
+                const scaleY = canvas.height / rect.height;
+                let clientX, clientY;
+                if (e.touches && e.touches.length > 0) {
+                    clientX = e.touches[0].clientX;
+                    clientY = e.touches[0].clientY;
+                } else {
+                    clientX = e.clientX;
+                    clientY = e.clientY;
+                }
+                return {
+                    x: (clientX - rect.left) * scaleX,
+                    y: (clientY - rect.top) * scaleY
+                };
+            }
+
+            function startDraw(e) {
+                if (e.target === resizeHandle) return;
+                e.preventDefault();
+                isDrawing = true;
+                startPoint = getPos(e);
+
+                if (currentTool === 'pen' || currentTool === 'eraser') {
+                    currentStroke = {
+                        color: currentTool === 'eraser' ? '#ffffff' : brushColor,
+                        size: currentTool === 'eraser' ? brushSize * 3 : brushSize,
+                        points: [startPoint]
+                    };
+                    redrawFromHistory();
+                }
+            }
+
+            function drawMove(e) {
+                if (!isDrawing) return;
+                e.preventDefault();
+                const pos = getPos(e);
+                statusPos.textContent = `${Math.round(pos.x)}, ${Math.round(pos.y)}`;
+
+                if (currentTool === 'pen' || currentTool === 'eraser') {
+                    currentStroke.points.push(pos);
+                    ctx.strokeStyle = currentStroke.color;
+                    ctx.lineWidth = currentStroke.size;
+                    ctx.lineCap = 'round';
+                    ctx.lineJoin = 'round';
+                    const pts = currentStroke.points;
+                    ctx.beginPath();
+                    ctx.moveTo(pts[pts.length - 2].x, pts[pts.length - 2].y);
+                    ctx.lineTo(pos.x, pos.y);
+                    ctx.stroke();
+                } else {
+                    redrawFromHistory();
+                    drawShapePreview(startPoint, pos);
+                }
+            }
+
+            function endDraw(e) {
+                if (!isDrawing) return;
+                isDrawing = false;
+
+                if (currentTool === 'pen' || currentTool === 'eraser') {
+                    if (currentStroke && currentStroke.points.length > 0) {
+                        strokes.push(currentStroke);
+                        if (strokes.length > 200) strokes.shift();
+                    }
+                    currentStroke = null;
+                } else if (startPoint) {
+                    const rect = canvas.getBoundingClientRect();
+                    const endPos = e.touches && e.touches.length > 0
+                        ? { x: (e.changedTouches[0].clientX - rect.left) * (canvas.width / rect.width), y: (e.changedTouches[0].clientY - rect.top) * (canvas.height / rect.height) }
+                        : { x: (e.clientX - rect.left) * (canvas.width / rect.width), y: (e.clientY - rect.top) * (canvas.height / rect.height) };
+
+                    const shapeStroke = createShapeStroke(startPoint, endPos, currentTool);
+                    if (shapeStroke) strokes.push(shapeStroke);
+                    startPoint = null;
+                }
+
+                redrawFromHistory();
+                saveDrawing();
+            }
+
+            function createShapeStroke(start, end, type) {
+                const color = brushColor;
+                const size = brushSize;
+                const points = [];
+                if (type === 'line') {
+                    points.push(start, end);
+                } else if (type === 'rect') {
+                    const x1 = start.x, y1 = start.y, x2 = end.x, y2 = end.y;
+                    points.push({x:x1,y:y1},{x:x2,y:y1},{x:x2,y:y2},{x:x1,y:y2},{x:x1,y:y1});
+                } else if (type === 'circle') {
+                    const cx = (start.x + end.x) / 2;
+                    const cy = (start.y + end.y) / 2;
+                    const rx = Math.abs(end.x - start.x) / 2;
+                    const ry = Math.abs(end.y - start.y) / 2;
+                    const steps = 60;
+                    for (let i = 0; i <= steps; i++) {
+                        const angle = (i / steps) * Math.PI * 2;
+                        points.push({ x: cx + rx * Math.cos(angle), y: cy + ry * Math.sin(angle) });
+                    }
+                }
+                return { color, size, points };
+            }
+
+            canvas.addEventListener('mousedown', startDraw);
+            canvas.addEventListener('mousemove', drawMove);
+            canvas.addEventListener('mouseup', endDraw);
+            canvas.addEventListener('mouseleave', (e) => { if (isDrawing) endDraw(e); });
+            canvas.addEventListener('mousemove', (e) => {
+                if (isResizing) return;
+                const pos = getPos(e);
+                statusPos.textContent = `${Math.round(pos.x)}, ${Math.round(pos.y)}`;
+            });
+
+            canvas.addEventListener('touchstart', startDraw, { passive: false });
+            canvas.addEventListener('touchmove', drawMove, { passive: false });
+            canvas.addEventListener('touchend', endDraw);
+            canvas.addEventListener('touchcancel', endDraw);
+
+            // ================= 保存/加载 =================
+            function saveDrawing() {
+                statusSave.textContent = '保存中...';
+                setTimeout(() => {
+                    try {
+                        const data = strokes.map(s => ({
+                            c: s.color, sz: s.size,
+                            p: s.points.map(pt => [Math.round(pt.x), Math.round(pt.y)])
+                        }));
+                        localStorage.setItem(DRAWING_KEY, JSON.stringify(data));
+                        if (bgImageData) localStorage.setItem(BG_IMAGE_KEY, bgImageData);
+                        statusSave.textContent = '✓ 已保存';
+                    } catch (e) {
+                        statusSave.textContent = '⚠ 保存失败（画作过大）';
+                    }
+                }, 200);
+            }
+
+            function loadDrawing() {
+                try {
+                    const raw = localStorage.getItem(DRAWING_KEY);
+                    if (raw) {
+                        const data = JSON.parse(raw);
+                        strokes = data.map(s => ({
+                            color: s.c, size: s.sz,
+                            points: s.p.map(pt => ({ x: pt[0], y: pt[1] }))
+                        }));
+                    }
+                } catch (e) {}
+
+                try {
+                    const bgData = localStorage.getItem(BG_IMAGE_KEY);
+                    if (bgData) {
+                        bgImageData = bgData;
+                        const img = new Image();
+                        img.onload = () => {
+                            bgImage = img;
+                            redrawFromHistory();
+                        };
+                        img.src = bgData;
+                    }
+                } catch (e) {}
+            }
+
+            // ================= 按钮 =================
+            clearBtn.addEventListener('click', () => {
+                if (strokes.length === 0 && !bgImage) {
+                    alert('画布已经是空的了。');
+                    return;
+                }
+                if (confirm('确定要清空画布吗？此操作不可撤销。')) {
+                    strokes = [];
+                    bgImage = null;
+                    bgImageData = null;
+                    try {
+                        localStorage.removeItem(BG_IMAGE_KEY);
+                        localStorage.removeItem(DRAWING_KEY);
+                    } catch (e) {}
+                    redrawFromHistory();
+                    statusSave.textContent = '已清空';
+                }
+            });
+
+            undoBtn.addEventListener('click', () => {
+                if (strokes.length === 0) {
+                    alert('没有可撤销的笔画。');
+                    return;
+                }
+                strokes.pop();
+                redrawFromHistory();
+                saveDrawing();
+            });
+
+            downloadBtn.addEventListener('click', () => {
+                const dataURL = canvas.toDataURL('image/png');
+                const a = document.createElement('a');
+                const now = new Date();
+                const timestamp = `${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, '0')}${String(now.getDate()).padStart(2, '0')}_${String(now.getHours()).padStart(2, '0')}${String(now.getMinutes()).padStart(2, '0')}`;
+                a.href = dataURL;
+                a.download = `NorArts_${timestamp}.png`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+            });
+
+            importBtn.addEventListener('click', () => fileInput.click());
+
+            fileInput.addEventListener('change', (e) => {
+                const file = e.target.files && e.target.files[0];
+                if (!file) return;
+                if (!file.type.startsWith('image/')) {
+                    alert('请选择有效的图片文件。');
+                    fileInput.value = '';
+                    return;
+                }
+                if (file.size > 3 * 1024 * 1024) {
+                    if (!confirm('图片较大（超过 3MB），可能无法长期保存。是否继续？')) {
+                        fileInput.value = '';
+                        return;
+                    }
+                }
+                const reader = new FileReader();
+                reader.onload = (ev) => {
+                    const dataUrl = ev.target.result;
+                    const img = new Image();
+                    img.onload = () => {
+                        bgImage = img;
+                        bgImageData = dataUrl;
+                        redrawFromHistory();
+                        saveDrawing();
+                        statusSave.textContent = '✓ 图片已导入';
+                    };
+                    img.onerror = () => alert('图片加载失败。');
+                    img.src = dataUrl;
+                };
+                reader.readAsDataURL(file);
+                fileInput.value = '';
+            });
+
+            printBtn.addEventListener('click', () => {
+                printContent.innerHTML = '';
+                const img = document.createElement('img');
+                img.src = canvas.toDataURL('image/png');
+                img.style.maxWidth = '100%';
+                printContent.appendChild(img);
+                window.print();
+                setTimeout(() => { printContent.innerHTML = ''; }, 100);
+            });
+
+            // ================= 导航栏伸缩 =================
+            collapseBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                navbar.classList.add('collapsed');
+                expandBtn.style.display = 'flex';
+            });
+            expandBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                navbar.classList.remove('collapsed');
+                expandBtn.style.display = 'none';
+            });
+
+            // ================= 主题面板 =================
+            themeToggleBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                themePanel.classList.toggle('open');
+            });
+
+            themePanel.querySelectorAll('.theme-dot').forEach(dot => {
+                dot.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    applyTheme(dot.dataset.theme);
+                    themePanel.classList.remove('open');
+                });
+            });
+
+            document.addEventListener('click', (e) => {
+                if (themePanel.classList.contains('open') &&
+                    !themePanel.contains(e.target) &&
+                    e.target !== themeToggleBtn) {
+                    themePanel.classList.remove('open');
+                }
+            });
+
+            // ================= 响应式 =================
+            let resizeTimer = null;
+            window.addEventListener('resize', () => {
+                clearTimeout(resizeTimer);
+                resizeTimer = setTimeout(() => {
+                    // 100% 缩放时保持 1:1 像素，不需要重新计算
+                    // 但可以重新应用样式（防止容器尺寸变化）
+                    applyZoom();
+                }, 200);
+            });
+
+            // ================= 初始化 =================
+            canvas.width = canvasBaseSize.w;
+            canvas.height = canvasBaseSize.h;
+            loadDrawing();
+            applyZoom();
+            setTool('pen');
+
+            window.addEventListener('beforeunload', () => {
+                try {
+                    const data = strokes.map(s => ({
+                        c: s.color, sz: s.size,
+                        p: s.points.map(pt => [Math.round(pt.x), Math.round(pt.y)])
+                    }));
+                    localStorage.setItem(DRAWING_KEY, JSON.stringify(data));
+                    if (bgImageData) localStorage.setItem(BG_IMAGE_KEY, bgImageData);
+                    localStorage.setItem(CANVAS_SIZE_KEY, JSON.stringify(canvasBaseSize));
+                    localStorage.setItem(ZOOM_KEY, zoomLevel);
+                } catch (e) {}
+            });
+        });
+    </script>
+</body>
+</html>
