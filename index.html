@@ -3,9 +3,23 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nor - Full Page Replica</title>
+    <title>Nor Studio - 应用中心</title>
     <style>
-        /* 全局重置 */
+        /* ================= 主题变量（默认经典蓝·日间） ================= */
+        :root {
+            --primary: #3b4cca;
+            --primary-text: #3b4cca;
+            --bg: #ffffff;
+            --bg-alt: #f8f8fc;
+            --border: #000000;
+            --text: #000000;
+            --text-muted: #666666;
+            --hover: #e8e8ff;
+            --active: #d0d0ff;
+            --box-bg: #ffffff;
+            --footer-bg: #ffffff;
+        }
+
         * {
             margin: 0;
             padding: 0;
@@ -13,11 +27,13 @@
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-            background-color: #ffffff;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", "PingFang SC", "Microsoft YaHei", Arial, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
             min-height: 100vh;
             display: flex;
             flex-direction: column;
+            transition: background-color 0.3s ease, color 0.3s ease;
         }
 
         /* ================= 顶部导航栏 ================= */
@@ -25,157 +41,345 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            height: 80px;
-            padding: 0 40px;
-            border-bottom: 1px solid #000000;
-            background-color: #fff;
-            flex-shrink: 0; /* 防止被压缩 */
+            height: 60px;
+            padding: 0 28px;
+            border-bottom: 1px solid var(--border);
+            background-color: var(--bg);
+            flex-shrink: 0;
+            transition: background-color 0.3s ease, border-color 0.3s ease;
+            gap: 16px;
         }
 
         .logo-section {
             display: flex;
             align-items: center;
             text-decoration: none;
+            flex-shrink: 0;
         }
 
         .logo-icon {
-            height: 50px;
+            height: 36px;
             width: auto;
-            margin-right: 15px;
+            margin-right: 10px;
         }
 
         .logo-text {
-            font-size: 32px;
+            font-size: 30px;
             font-weight: 800;
-            color: #3b4cca;
+            color: var(--primary-text);
             letter-spacing: 0.5px;
+            transition: color 0.3s ease;
+            white-space: nowrap;
+        }
+
+        .nav-right {
+            display: flex;
+            align-items: center;
+            gap: 22px;
+            position: relative;
         }
 
         .nav-links {
             display: flex;
-            gap: 30px;
+            gap: 26px;
         }
 
         .nav-links a {
             text-decoration: none;
-            font-size: 28px;
+            font-size: 24px;
             font-weight: 700;
-            color: #3b4cca;
+            color: var(--primary-text);
+            transition: color 0.3s ease, opacity 0.2s ease;
+            white-space: nowrap;
         }
 
         .nav-links a:hover {
-            opacity: 0.8;
+            opacity: 0.7;
         }
 
-        /* ================= 主体内容区 ================= */
+        /* ================= 背景颜色按钮 ================= */
+        .theme-toggle-btn {
+            background-color: var(--bg);
+            border: 2px solid var(--primary);
+            border-radius: 6px;
+            color: var(--primary-text);
+            font-size: 18px;
+            line-height: 1;
+            font-weight: 700;
+            cursor: pointer;
+            padding: 6px 10px;
+            transition: all 0.15s ease;
+            flex-shrink: 0;
+        }
+
+        .theme-toggle-btn:hover {
+            background-color: var(--hover);
+        }
+
+        .theme-toggle-btn:active {
+            background-color: var(--active);
+        }
+
+        /* ================= 主题面板 ================= */
+        .theme-panel {
+            display: none;
+            position: absolute;
+            top: 44px;
+            right: 0;
+            background-color: var(--bg);
+            border: 2px solid var(--border);
+            border-radius: 8px;
+            padding: 12px 14px;
+            box-shadow: 5px 5px 0px var(--primary);
+            z-index: 100;
+            gap: 10px;
+            flex-wrap: wrap;
+            max-width: 260px;
+            transition: background-color 0.3s ease;
+        }
+
+        .theme-panel.open {
+            display: flex;
+        }
+
+        .theme-dot {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            border: 2px solid #cccccc;
+            cursor: pointer;
+            padding: 0;
+            transition: all 0.15s ease;
+            box-sizing: border-box;
+        }
+
+        .theme-dot:hover {
+            transform: scale(1.12);
+        }
+
+        .theme-dot.active {
+            border-color: var(--text);
+            box-shadow: 0 0 0 2px var(--bg), 0 0 0 4px currentColor;
+        }
+
+        .theme-dot[data-theme="blue"]   { background-color: #3b4cca; color: #3b4cca; }
+        .theme-dot[data-theme="red"]    { background-color: #e63946; color: #e63946; }
+        .theme-dot[data-theme="green"]  { background-color: #2a9d8f; color: #2a9d8f; }
+        .theme-dot[data-theme="orange"] { background-color: #e76f51; color: #e76f51; }
+        .theme-dot[data-theme="purple"] { background-color: #8e44ad; color: #8e44ad; }
+        .theme-dot[data-theme="dark"]   { background-color: #1a1a1a; color: #888888; }
+
+        /* ================= 主体内容区：2 × 2 应用网格 ================= */
         .main-content {
-            flex: 1; /* 关键：占据剩余全部高度，将页脚推到最底部 */
-            padding: 20px 20px 0 20px; /* 左右和上留白 */
-            display: flex;
-            flex-direction: column;
-            gap: 20px; /* 上下两大行之间的间距 */
-        }
-
-        /* 每一行布局 */
-        .row {
-            display: flex;
-            gap: 20px; /* 格子之间的间距 */
-        }
-
-        /* 第一行：左大(占约58%)，中、右(各占约21%) */
-        .row-top .box-large {
-            flex: 5.5;
-        }
-        .row-top .box-small {
-            flex: 2;
-        }
-
-        /* 第二行：左小(占约22%)，中(占约55%)，右窄(占约23%) */
-        .row-bottom .box-small {
-            flex: 2.2;
-        }
-        .row-bottom .box-large {
-            flex: 5.5;
-        }
-        .row-bottom .box-narrow {
-            flex: 2.3;
-        }
-
-        /* 方块通用样式 */
-        .box {
-            border: 4px solid #000000; /* 粗黑边框，还原图片风格 */
-            background-color: #ffffff;
+            flex: 1;
+            padding: 20px 28px;
             display: flex;
             justify-content: center;
             align-items: center;
-            overflow: hidden; /* 防止图片溢出 */
+            transition: background-color 0.3s ease;
         }
 
-        /* 方框内的链接 */
-        .box a {
-            display: block;
+        .app-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            grid-template-rows: repeat(2, 1fr);
+            gap: 18px;
             width: 100%;
+            max-width: 500px;
             height: 100%;
+            max-height: 480px;
+            aspect-ratio: 1 / 1;
         }
 
-        /* 方框内的图片（保持比例不变，填满容器） */
-        .box img {
-            display: block;
-            width: 100%;
-            height: 100%;
-            object-fit: cover; /* 关键：保持比例裁剪填满，不拉伸变形 */
-        }
-
-        /* 为了让第二行高度更接近原图，给第二行设置一个比例高度 */
-        .row-bottom {
-            flex: 1.2; /* 底部行稍微高一点 */
-        }
-        .row-top {
-            flex: 1;
-        }
-
-
-        /* ================= 底部 Footer (版权 + 语言) ================= */
-        .footer {
-            padding: 10px 40px 20px 20px; /* 微调对齐 */
+        /* 应用方框 */
+        .app-box {
+            border: 3px solid var(--border);
+            background-color: var(--box-bg);
             display: flex;
             flex-direction: column;
-            gap: 5px;
-            background-color: #fff;
-            flex-shrink: 0; /* 防止被压缩 */
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            position: relative;
+            transition: transform 0.2s ease, box-shadow 0.2s ease,
+                        border-color 0.2s ease, background-color 0.3s ease;
+            cursor: pointer;
+            text-decoration: none;
+            color: var(--text);
+            padding: 12px;
+            gap: 8px;
         }
 
-        /* 版权信息 */
-        .copyright {
-            font-size: 24px;
+        .app-box:hover {
+            transform: translateY(-4px);
+            box-shadow: 5px 5px 0px var(--primary);
+            border-color: var(--primary);
+        }
+
+        .app-box:active {
+            transform: translateY(-1px);
+            box-shadow: 3px 3px 0px var(--primary);
+        }
+
+        /* 应用图标：图片链接 */
+        .app-icon {
+            width: 100%;
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            user-select: none;
+            overflow: hidden;
+        }
+
+        .app-icon img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+            display: block;
+        }
+
+        /* 应用名称 */
+        .app-name {
+            font-size: 22px;
             font-weight: 800;
-            color: #3b4cca;
-            letter-spacing: 1px;
+            color: var(--text);
+            text-align: center;
+            letter-spacing: 0.3px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            width: 100%;
+            transition: color 0.3s ease;
         }
 
-        /* 语言选择行 */
+        /* ================= 底部 Footer ================= */
+        .footer {
+            padding: 10px 28px 16px 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            background-color: var(--footer-bg);
+            flex-shrink: 0;
+            border-top: 1px solid var(--border);
+            transition: background-color 0.3s ease, border-color 0.3s ease;
+        }
+
+        .copyright {
+            font-size: 22px;
+            font-weight: 800;
+            color: var(--primary-text);
+            letter-spacing: 0.5px;
+            transition: color 0.3s ease;
+        }
+
         .language-selector {
             font-size: 16px;
             font-weight: 700;
-            color: #000000;
+            color: var(--text);
             display: flex;
             align-items: center;
-            gap: 6px; /* 单词之间的间距 */
+            gap: 6px;
+            transition: color 0.3s ease;
         }
 
         .language-selector .label {
             margin-right: 4px;
         }
 
-        /* 语言链接样式 */
         .language-selector a {
             text-decoration: none;
-            color: #000000;
+            color: var(--text);
+            transition: color 0.2s ease;
+            cursor: pointer;
         }
-        
+
         .language-selector a:hover {
-            color: #3b4cca;
+            color: var(--primary-text);
             text-decoration: underline;
+        }
+
+        .language-selector a.active {
+            color: var(--primary-text);
+            text-decoration: underline;
+            font-weight: 900;
+        }
+
+        /* ================= 手机端适配 ================= */
+        @media (max-width: 768px) {
+            .navbar {
+                flex-direction: column;
+                height: auto;
+                padding: 10px 14px;
+                gap: 8px;
+            }
+
+            .logo-section {
+                width: 100%;
+                justify-content: center;
+            }
+
+            .logo-icon {
+                height: 28px;
+                margin-right: 8px;
+            }
+
+            .logo-text {
+                font-size: 22px;
+            }
+
+            .nav-right {
+                width: 100%;
+                justify-content: center;
+                gap: 14px;
+            }
+
+            .nav-links {
+                gap: 18px;
+            }
+
+            .nav-links a {
+                font-size: 18px;
+            }
+
+            .theme-panel {
+                right: 50%;
+                transform: translateX(50%);
+                top: 60px;
+            }
+
+            .main-content {
+                padding: 14px 12px;
+            }
+
+            .app-grid {
+                gap: 14px;
+                max-height: none;
+                aspect-ratio: auto;
+            }
+
+            .app-icon img {
+                max-height: 80px;
+            }
+
+            .app-name {
+                font-size: 17px;
+            }
+
+            .app-box {
+                padding: 10px;
+                gap: 6px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .app-icon img {
+                max-height: 64px;
+            }
+
+            .app-name {
+                font-size: 15px;
+            }
         }
 
     </style>
@@ -185,59 +389,263 @@
     <!-- 导航栏 -->
     <header class="navbar">
         <div class="logo-section">
-            <img src="logo.png" alt="Nor Logo" class="logo-icon">
-            <span class="logo-text">Nor</span>
+            <img src="*" alt="Nor Logo" class="logo-icon">
+            <span class="logo-text" data-i18n="logo">Nor Studio</span>
         </div>
-        <nav class="nav-links">
-            <a href="#">更多</a>
-            <a href="#">发现</a>
-            <a href="#">关于</a>
-        </nav>
+        <div class="nav-right">
+            <nav class="nav-links">
+                <a href="#" data-i18n="nav.more">更多</a>
+                <a href="#" data-i18n="nav.discover">发现</a>
+                <a href="#" data-i18n="nav.about">关于</a>
+            </nav>
+            <!-- 背景颜色按钮 -->
+            <button class="theme-toggle-btn" id="themeToggleBtn" title="背景颜色">🎨</button>
+
+            <!-- 背景颜色伸缩面板 -->
+            <div class="theme-panel" id="themePanel">
+                <button class="theme-dot active" data-theme="blue"   title="经典蓝"></button>
+                <button class="theme-dot"        data-theme="red"    title="珊瑚红"></button>
+                <button class="theme-dot"        data-theme="green"  title="森林绿"></button>
+                <button class="theme-dot"        data-theme="orange" title="落日橙"></button>
+                <button class="theme-dot"        data-theme="purple" title="典雅紫"></button>
+                <button class="theme-dot"        data-theme="dark"   title="夜间模式"></button>
+            </div>
+        </div>
     </header>
 
-    <!-- 主体内容区 -->
+    <!-- 主体内容区：2 × 2 应用网格 -->
     <main class="main-content">
-        <!-- 第一行 -->
-        <div class="row row-top">
-            <div class="box box-large">
-                <a href="https://coming.nor.asia/%E6%B5%8B%E8%AF%95%E6%96%B0%E9%97%BB"><img src="https://ys-c.ysepan.com/wap/yangrenhyx/Midl9F9jH7C5b99/yc6gA7Iq4jBgGPa44s3jcgc3fS1ke3/fiFs80olu.jpeg" alt="Image 1"></a>
-            </div>
-            <div class="box box-small">
-                <a href="#"><img src="&" alt="Image 2"></a>
-            </div>
-            <div class="box box-small">
-                <a href="#"><img src="&" alt="Image 3"></a>
-            </div>
-        </div>
-
-        <!-- 第二行 -->
-        <div class="row row-bottom">
-            <div class="box box-small">
-                <a href="#"><img src="&" alt="Image 4"></a>
-            </div>
-            <div class="box box-large">
-                <a href="#"><img src="&" alt="Image 5"></a>
-            </div>
-            <div class="box box-narrow">
-                <a href="#"><img src="&" alt="Image 6"></a>
-            </div>
+        <div class="app-grid">
+            <!-- 应用 1 -->
+            <a href="#" class="app-box">
+                <div class="app-icon">
+                    <img src="*" alt="Nors聚新闻">
+                </div>
+                <div class="app-name" data-i18n="app.news">Nors聚新闻</div>
+            </a>
+            <!-- 应用 2 -->
+            <a href="#" class="app-box">
+                <div class="app-icon">
+                    <img src="*" alt="Nor 艺术编辑">
+                </div>
+                <div class="app-name" data-i18n="app.art">Nor 艺术编辑</div>
+            </a>
+            <!-- 应用 3 -->
+            <a href="#" class="app-box">
+                <div class="app-icon">
+                    <img src="*" alt="Nor 工具">
+                </div>
+                <div class="app-name" data-i18n="app.tools">Nor 工具</div>
+            </a>
+            <!-- 应用 4（不翻译，固定为 Nortbook） -->
+            <a href="#" class="app-box">
+                <div class="app-icon">
+                    <img src="*" alt="Nortbook">
+                </div>
+                <div class="app-name">Nortbook</div>
+            </a>
         </div>
     </main>
 
-    <!-- 底部信息栏 -->
+    <!-- 底部 -->
     <footer class="footer">
-        <!-- 版权信息 -->
         <div class="copyright">©NorStudio 2026</div>
-        
-        <!-- 语言选择 -->
         <div class="language-selector">
-            <span class="label">选择语言</span>
-            <a href="￥">EN</a>
-            <a href="￥">CN</a>
-            <a href="￥">FR</a>
-            <a href="￥">JP</a>
+            <span class="label" data-i18n="lang.label">选择语言</span>
+            <a href="#" data-lang="en">EN</a>
+            <a href="#" data-lang="cn">CN</a>
+            <a href="#" data-lang="fr">FR</a>
+            <a href="#" data-lang="jp">JP</a>
         </div>
     </footer>
 
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const themeToggleBtn = document.getElementById('themeToggleBtn');
+            const themePanel = document.getElementById('themePanel');
+            const THEME_KEY = 'nor_studio_theme';
+            const LANG_KEY = 'nor_studio_lang';
+
+            // ================= 语言配置 =================
+            const TRANSLATIONS = {
+                en: {
+                    'logo': 'Nor Studio',
+                    'nav.more': 'More',
+                    'nav.discover': 'Discover',
+                    'nav.about': 'About',
+                    'app.news': 'Nors News',
+                    'app.art': 'Nor Art Editor',
+                    'app.tools': 'Nor Tools',
+                    'lang.label': 'Select Language'
+                },
+                cn: {
+                    'logo': 'Nor Studio',
+                    'nav.more': '更多',
+                    'nav.discover': '发现',
+                    'nav.about': '关于',
+                    'app.news': 'Nors聚新闻',
+                    'app.art': 'Nor 艺术编辑',
+                    'app.tools': 'Nor 工具',
+                    'lang.label': '选择语言'
+                },
+                fr: {
+                    'logo': 'Nor Studio',
+                    'nav.more': 'Plus',
+                    'nav.discover': 'Découvrir',
+                    'nav.about': 'À propos',
+                    'app.news': 'Nors Actualités',
+                    'app.art': 'Nor Éditeur d\'Art',
+                    'app.tools': 'Nor Outils',
+                    'lang.label': 'Choisir la langue'
+                },
+                jp: {
+                    'logo': 'Nor Studio',
+                    'nav.more': 'その他',
+                    'nav.discover': '発見',
+                    'nav.about': '概要',
+                    'app.news': 'Norsニュース',
+                    'app.art': 'Nor アートエディタ',
+                    'app.tools': 'Nor ツール',
+                    'lang.label': '言語を選択'
+                }
+            };
+
+            // 根据浏览器语言决定默认语言
+            function detectBrowserLang() {
+                const nav = (navigator.language || navigator.userLanguage || 'en').toLowerCase();
+                if (nav.startsWith('zh')) return 'cn';
+                if (nav.startsWith('fr')) return 'fr';
+                if (nav.startsWith('ja')) return 'jp';
+                if (nav.startsWith('en')) return 'en';
+                return 'en';  // 默认英文
+            }
+
+            // 应用语言
+            function applyLang(lang) {
+                const dict = TRANSLATIONS[lang] || TRANSLATIONS.en;
+                document.querySelectorAll('[data-i18n]').forEach(el => {
+                    const key = el.getAttribute('data-i18n');
+                    if (dict[key]) el.textContent = dict[key];
+                });
+                document.documentElement.lang = lang === 'cn' ? 'zh-CN' :
+                                                lang === 'jp' ? 'ja' :
+                                                lang === 'fr' ? 'fr' : 'en';
+                // 高亮当前语言链接
+                document.querySelectorAll('.language-selector a').forEach(a => {
+                    a.classList.toggle('active', a.dataset.lang === lang);
+                });
+                try { localStorage.setItem(LANG_KEY, lang); } catch (e) {}
+            }
+
+            // 初始化语言：优先使用用户保存，其次自动检测
+            let savedLang = null;
+            try { savedLang = localStorage.getItem(LANG_KEY); } catch (e) {}
+            const initialLang = savedLang || detectBrowserLang();
+            applyLang(initialLang);
+
+            // 绑定语言切换
+            document.querySelectorAll('.language-selector a').forEach(a => {
+                a.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    applyLang(a.dataset.lang);
+                });
+            });
+
+            // ================= 主题配置 =================
+            const THEMES = {
+                blue:   {
+                    primary: '#3b4cca', primaryText: '#3b4cca',
+                    bg: '#ffffff', border: '#000000',
+                    text: '#000000', muted: '#666666',
+                    hover: '#e8e8ff', active: '#d0d0ff',
+                    boxBg: '#ffffff', footerBg: '#ffffff'
+                },
+                red:    {
+                    primary: '#e63946', primaryText: '#e63946',
+                    bg: '#fffafa', border: '#8b0000',
+                    text: '#1a1a1a', muted: '#a87070',
+                    hover: '#ffe5e7', active: '#ffd0d3',
+                    boxBg: '#ffffff', footerBg: '#fffafa'
+                },
+                green:  {
+                    primary: '#2a9d8f', primaryText: '#2a9d8f',
+                    bg: '#f6fdfb', border: '#0b4a40',
+                    text: '#1a1a1a', muted: '#6a8a85',
+                    hover: '#dff5f2', active: '#c8ebe6',
+                    boxBg: '#ffffff', footerBg: '#f6fdfb'
+                },
+                orange: {
+                    primary: '#e76f51', primaryText: '#b54a2e',
+                    bg: '#fff9f5', border: '#7a2e15',
+                    text: '#1a1a1a', muted: '#a87860',
+                    hover: '#fdeae4', active: '#fbd8cd',
+                    boxBg: '#ffffff', footerBg: '#fff9f5'
+                },
+                purple: {
+                    primary: '#8e44ad', primaryText: '#8e44ad',
+                    bg: '#fcf7ff', border: '#3d1652',
+                    text: '#1a1a1a', muted: '#8a70a0',
+                    hover: '#f3e5fa', active: '#e7cff3',
+                    boxBg: '#ffffff', footerBg: '#fcf7ff'
+                },
+                dark:   {
+                    primary: '#7c8dff', primaryText: '#9aa8ff',
+                    bg: '#121212', border: '#888888',
+                    text: '#e8e8e8', muted: '#888888',
+                    hover: '#2a2a3a', active: '#3a3a4a',
+                    boxBg: '#1e1e1e', footerBg: '#1a1a1a'
+                }
+            };
+
+            function applyTheme(name) {
+                const t = THEMES[name];
+                if (!t) return;
+                const r = document.documentElement.style;
+                r.setProperty('--primary', t.primary);
+                r.setProperty('--primary-text', t.primaryText);
+                r.setProperty('--bg', t.bg);
+                r.setProperty('--border', t.border);
+                r.setProperty('--text', t.text);
+                r.setProperty('--text-muted', t.muted);
+                r.setProperty('--hover', t.hover);
+                r.setProperty('--active', t.active);
+                r.setProperty('--box-bg', t.boxBg);
+                r.setProperty('--footer-bg', t.footerBg);
+
+                themePanel.querySelectorAll('.theme-dot').forEach(d =>
+                    d.classList.toggle('active', d.dataset.theme === name));
+
+                try { localStorage.setItem(THEME_KEY, name); } catch (e) {}
+            }
+
+            // 初始化主题
+            let savedTheme = 'blue';
+            try { savedTheme = localStorage.getItem(THEME_KEY) || 'blue'; } catch (e) {}
+            applyTheme(savedTheme);
+
+            // ================= 面板伸缩 =================
+            themeToggleBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                themePanel.classList.toggle('open');
+            });
+
+            themePanel.querySelectorAll('.theme-dot').forEach(dot => {
+                dot.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    applyTheme(dot.dataset.theme);
+                    themePanel.classList.remove('open');
+                });
+            });
+
+            // 点击外部关闭面板
+            document.addEventListener('click', (e) => {
+                if (themePanel.classList.contains('open') &&
+                    !themePanel.contains(e.target) &&
+                    e.target !== themeToggleBtn) {
+                    themePanel.classList.remove('open');
+                }
+            });
+        });
+    </script>
 </body>
 </html>
