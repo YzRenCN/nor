@@ -1,0 +1,703 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nor Arts</title>
+    <style>
+        /* ================= 默认主题（经典蓝·日间） ================= */
+        :root {
+            --primary: #3b4cca;
+            --primary-text: #3b4cca;
+            --bg: #ffffff;
+            --bg-alt: #f9f9fc;
+            --border: #000000;
+            --text: #000000;
+            --text-muted: #888888;
+            --input-bg: #ffffff;
+            --input-text: #000000;
+            --hover: #e8e8ff;
+            --active: #d0d0ff;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", Arial, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        /* ================= 顶部导航栏 ================= */
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            height: 64px;
+            padding: 0 28px;
+            border-bottom: 3px solid var(--border);
+            background-color: var(--bg);
+            flex-shrink: 0;
+            gap: 16px;
+            overflow: hidden;
+            transition: height 0.3s ease, padding 0.3s ease,
+                        border-bottom-width 0.3s ease, opacity 0.3s ease,
+                        background-color 0.3s ease;
+        }
+
+        .navbar.collapsed {
+            height: 0;
+            padding-top: 0;
+            padding-bottom: 0;
+            border-bottom-width: 0;
+            opacity: 0;
+        }
+
+        .navbar.collapsed .logo-section,
+        .navbar.collapsed .nav-right {
+            visibility: hidden;
+        }
+
+        .logo-section {
+            display: flex;
+            align-items: center;
+            text-decoration: none;
+            flex-shrink: 0;
+        }
+
+        .logo-icon {
+            height: 36px;
+            width: auto;
+            margin-right: 10px;
+            display: block;
+            flex-shrink: 0;
+        }
+
+        .logo-text {
+            font-size: clamp(16px, 3vw, 24px);
+            font-weight: 900;
+            color: var(--primary-text);
+            letter-spacing: 0.3px;
+            white-space: nowrap;
+        }
+
+        .nav-right {
+            display: flex;
+            align-items: center;
+            gap: clamp(10px, 1.6vw, 22px);
+            flex-wrap: wrap;
+            justify-content: flex-end;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: clamp(10px, 1.6vw, 22px);
+            flex-wrap: wrap;
+            justify-content: flex-end;
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            font-size: clamp(13px, 2vw, 18px);
+            font-weight: 900;
+            color: var(--primary-text);
+            letter-spacing: 0.3px;
+            white-space: nowrap;
+        }
+
+        .nav-links a:hover {
+            opacity: 0.8;
+        }
+
+        /* ================= 图案按钮 ================= */
+        .icon-btn {
+            background-color: var(--bg);
+            border: 2px solid var(--primary);
+            border-radius: 4px;
+            color: var(--primary-text);
+            font-family: inherit;
+            font-size: 14px;
+            line-height: 1;
+            font-weight: 700;
+            cursor: pointer;
+            padding: 5px 10px;
+            transition: all 0.15s ease;
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+
+        .icon-btn:hover {
+            background-color: var(--hover);
+        }
+
+        .icon-btn:active {
+            background-color: var(--active);
+        }
+
+        /* ================= 主体内容 ================= */
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            padding: 16px 28px;
+            background-color: var(--bg);
+            transition: background-color 0.3s ease;
+        }
+
+        /* ================= 编辑器工具栏 ================= */
+        .editor-toolbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 6px 0;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .editor-toolbar .toolbar-title {
+            font-size: clamp(12px, 1.4vw, 15px);
+            font-weight: 700;
+            color: var(--text-muted);
+            letter-spacing: 0.3px;
+        }
+
+        .editor-toolbar .toolbar-actions {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            align-items: center;
+            position: relative;
+            z-index: 10;
+        }
+
+        .editor-toolbar button {
+            background-color: var(--bg);
+            border: 2px solid var(--primary);
+            border-radius: 4px;
+            color: var(--primary-text);
+            font-family: inherit;
+            font-size: clamp(11px, 1.2vw, 14px);
+            font-weight: 700;
+            cursor: pointer;
+            padding: 5px 12px;
+            transition: all 0.15s ease;
+            white-space: nowrap;
+        }
+
+        .editor-toolbar button:hover {
+            background-color: var(--hover);
+        }
+
+        .editor-toolbar button:active {
+            background-color: var(--active);
+        }
+
+        .toolbar-expand-btn {
+            font-size: 14px;
+            line-height: 1;
+            padding: 5px 10px;
+            display: none;
+        }
+
+        .navbar.collapsed ~ .main-content .toolbar-expand-btn {
+            display: inline-block;
+        }
+
+        /* ================= 主题选择面板 ================= */
+        .theme-toggle-btn {
+            font-size: 14px;
+            line-height: 1;
+            padding: 5px 10px;
+        }
+
+        .theme-panel {
+            display: none;
+            position: absolute;
+            top: calc(100% + 8px);
+            right: 0;
+            background-color: var(--bg);
+            border: 3px solid var(--border);
+            border-radius: 6px;
+            padding: 10px 12px;
+            box-shadow: 5px 5px 0px var(--primary);
+            z-index: 100;
+            gap: 10px;
+            flex-wrap: wrap;
+            max-width: 280px;
+        }
+
+        .theme-panel.open {
+            display: flex;
+        }
+
+        .theme-dot {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            border: 2px solid #cccccc;
+            cursor: pointer;
+            padding: 0;
+            transition: all 0.15s ease;
+            box-sizing: border-box;
+            position: relative;
+        }
+
+        .theme-dot:hover {
+            transform: scale(1.12);
+        }
+
+        .theme-dot.active {
+            border-color: #000000;
+            box-shadow: 0 0 0 2px var(--bg), 0 0 0 4px currentColor;
+        }
+
+        .theme-dot[data-theme="blue"]   { background-color: #3b4cca; color: #3b4cca; }
+        .theme-dot[data-theme="red"]    { background-color: #e63946; color: #e63946; }
+        .theme-dot[data-theme="green"]  { background-color: #2a9d8f; color: #2a9d8f; }
+        .theme-dot[data-theme="orange"] { background-color: #e76f51; color: #e76f51; }
+        .theme-dot[data-theme="purple"] { background-color: #8e44ad; color: #8e44ad; }
+        .theme-dot[data-theme="dark"]   { background-color: #1a1a1a; color: #888888; }
+
+        /* ================= 文本编辑区 ================= */
+        .editor-textarea {
+            flex: 1;
+            width: 100%;
+            min-height: 400px;
+            border: none;
+            outline: none;
+            resize: none;
+            padding: 14px 0;
+            font-family: "Consolas", "Monaco", "Courier New", monospace;
+            font-size: 15px;
+            line-height: 1.7;
+            color: var(--input-text);
+            background-color: var(--input-bg);
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        .editor-textarea::placeholder {
+            color: #bbbbbb;
+        }
+
+        /* ================= 底部状态栏 ================= */
+        .editor-statusbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 6px 0;
+            font-size: clamp(10px, 1.2vw, 12px);
+            font-weight: 500;
+            color: var(--text-muted);
+            flex-wrap: wrap;
+            gap: 8px;
+            border-top: 1px solid var(--border);
+        }
+
+        .editor-statusbar .save-status {
+            color: var(--primary-text);
+        }
+
+        /* ================= 打印样式 ================= */
+        @media print {
+            body {
+                background-color: #ffffff;
+                color: #000000;
+                min-height: auto;
+            }
+            .navbar,
+            .editor-toolbar,
+            .editor-statusbar {
+                display: none !important;
+            }
+            .main-content {
+                padding: 0;
+            }
+            .editor-textarea {
+                display: none;
+            }
+            .print-content {
+                display: block !important;
+                font-family: "Consolas", "Monaco", "Courier New", monospace;
+                font-size: 12pt;
+                line-height: 1.6;
+                white-space: pre-wrap;
+                word-wrap: break-word;
+                color: #000000;
+            }
+        }
+
+        .print-content {
+            display: none;
+        }
+
+        /* ================= 手机端适配 ================= */
+        @media (max-width: 768px) {
+            .navbar {
+                flex-direction: column;
+                height: auto;
+                padding: 10px 14px;
+                gap: 6px;
+            }
+            .navbar.collapsed {
+                height: 0;
+                padding-top: 0;
+                padding-bottom: 0;
+                border-bottom-width: 0;
+            }
+            .logo-section {
+                width: 100%;
+                justify-content: center;
+            }
+            .logo-icon {
+                height: 28px;
+                margin-right: 8px;
+            }
+            .nav-right {
+                width: 100%;
+                justify-content: center;
+                gap: 10px;
+            }
+            .nav-links {
+                justify-content: center;
+                gap: 14px;
+            }
+            .nav-links a {
+                font-size: 14px;
+                padding: 3px 0;
+            }
+            .main-content {
+                padding: 10px 14px;
+            }
+            .editor-textarea {
+                min-height: 300px;
+                font-size: 13px;
+            }
+            .editor-toolbar {
+                padding: 5px 0;
+            }
+            .editor-toolbar button {
+                padding: 4px 10px;
+            }
+            .theme-panel {
+                right: 0;
+                padding: 8px 10px;
+                max-width: 240px;
+            }
+            .theme-dot {
+                width: 24px;
+                height: 24px;
+            }
+        }
+
+        @media (max-width: 380px) {
+            .logo-text { font-size: 15px; }
+            .logo-icon { height: 24px; margin-right: 6px; }
+            .nav-links { gap: 8px; }
+            .nav-links a { font-size: 12px; }
+            .editor-toolbar .toolbar-title { font-size: 12px; }
+            .editor-toolbar button { font-size: 11px; padding: 3px 8px; }
+            .icon-btn { font-size: 12px; padding: 3px 8px; }
+            .theme-dot { width: 22px; height: 22px; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- 导航栏 -->
+    <header class="navbar" id="navbar">
+        <div class="logo-section">
+            <img src="*" alt="Nor Arts Logo" class="logo-icon">
+            <span class="logo-text">Nor Arts</span>
+        </div>
+        <div class="nav-right">
+            <nav class="nav-links">
+                <a href="#">Draw</a>
+                <a href="#">更多工具</a>
+                <a href="#">返回</a>
+                <a href="#">主页</a>
+            </nav>
+            <button class="icon-btn" id="collapseBtn" title="收缩导航栏">▲</button>
+        </div>
+    </header>
+
+    <!-- 主体内容区 -->
+    <main class="main-content">
+        <div class="editor-toolbar">
+            <span class="toolbar-title">TXT 编辑器</span>
+            <div class="toolbar-actions">
+                <button id="clearBtn">清空</button>
+                <button id="copyBtn">复制</button>
+                <button id="downloadBtn">下载</button>
+                <button id="printBtn">打印</button>
+                <button class="toolbar-expand-btn" id="expandBtn" title="展开导航栏">▼</button>
+                <button class="theme-toggle-btn" id="themeToggleBtn" title="主题颜色">🎨</button>
+
+                <div class="theme-panel" id="themePanel">
+                    <button class="theme-dot active" data-theme="blue"   title="经典蓝"></button>
+                    <button class="theme-dot"        data-theme="red"    title="珊瑚红"></button>
+                    <button class="theme-dot"        data-theme="green"  title="森林绿"></button>
+                    <button class="theme-dot"        data-theme="orange" title="落日橙"></button>
+                    <button class="theme-dot"        data-theme="purple" title="典雅紫"></button>
+                    <button class="theme-dot"        data-theme="dark"   title="夜间模式"></button>
+                </div>
+            </div>
+        </div>
+
+        <textarea 
+            id="textEditor" 
+            class="editor-textarea" 
+            placeholder="在此输入文字... 内容会自动保存，刷新不会丢失。"
+            spellcheck="false"
+        ></textarea>
+
+        <div class="print-content" id="printContent"></div>
+
+        <div class="editor-statusbar">
+            <span id="statsInfo">字符数：0 | 行数：1</span>
+            <span class="save-status" id="saveStatus">已保存</span>
+        </div>
+    </main>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const editor = document.getElementById('textEditor');
+            const clearBtn = document.getElementById('clearBtn');
+            const copyBtn = document.getElementById('copyBtn');
+            const downloadBtn = document.getElementById('downloadBtn');
+            const printBtn = document.getElementById('printBtn');
+            const statsInfo = document.getElementById('statsInfo');
+            const saveStatus = document.getElementById('saveStatus');
+            const printContent = document.getElementById('printContent');
+            const navbar = document.getElementById('navbar');
+            const collapseBtn = document.getElementById('collapseBtn');
+            const expandBtn = document.getElementById('expandBtn');
+            const themeToggleBtn = document.getElementById('themeToggleBtn');
+            const themePanel = document.getElementById('themePanel');
+
+            const STORAGE_KEY = 'nor_arts_txt_editor_content';
+            const THEME_KEY = 'nor_arts_theme';
+            let saveTimer = null;
+
+            const THEMES = {
+                blue: {
+                    primary: '#3b4cca', primaryText: '#3b4cca',
+                    bg: '#ffffff', bgAlt: '#f9f9fc',
+                    border: '#000000', text: '#000000', textMuted: '#888888',
+                    inputBg: '#ffffff', inputText: '#000000',
+                    hover: '#e8e8ff', active: '#d0d0ff'
+                },
+                red: {
+                    primary: '#e63946', primaryText: '#e63946',
+                    bg: '#fffafa', bgAlt: '#ffecee',
+                    border: '#8b0000', text: '#1a1a1a', textMuted: '#a87070',
+                    inputBg: '#ffffff', inputText: '#1a1a1a',
+                    hover: '#ffe5e7', active: '#ffd0d3'
+                },
+                green: {
+                    primary: '#2a9d8f', primaryText: '#2a9d8f',
+                    bg: '#f6fdfb', bgAlt: '#e4f5f2',
+                    border: '#0b4a40', text: '#1a1a1a', textMuted: '#6a8a85',
+                    inputBg: '#ffffff', inputText: '#1a1a1a',
+                    hover: '#dff5f2', active: '#c8ebe6'
+                },
+                orange: {
+                    primary: '#e76f51', primaryText: '#b54a2e',
+                    bg: '#fff9f5', bgAlt: '#fdeee7',
+                    border: '#7a2e15', text: '#1a1a1a', textMuted: '#a87860',
+                    inputBg: '#ffffff', inputText: '#1a1a1a',
+                    hover: '#fdeae4', active: '#fbd8cd'
+                },
+                purple: {
+                    primary: '#8e44ad', primaryText: '#8e44ad',
+                    bg: '#fcf7ff', bgAlt: '#f3e5fa',
+                    border: '#3d1652', text: '#1a1a1a', textMuted: '#8a70a0',
+                    inputBg: '#ffffff', inputText: '#1a1a1a',
+                    hover: '#f3e5fa', active: '#e7cff3'
+                },
+                dark: {
+                    primary: '#7c8dff', primaryText: '#9aa8ff',
+                    bg: '#121212', bgAlt: '#1e1e1e',
+                    border: '#888888', text: '#e8e8e8', textMuted: '#888888',
+                    inputBg: '#1a1a1a', inputText: '#e8e8e8',
+                    hover: '#2a2a3a', active: '#3a3a4a'
+                }
+            };
+
+            function applyTheme(themeName) {
+                const theme = THEMES[themeName];
+                if (!theme) return;
+                const root = document.documentElement;
+                root.style.setProperty('--primary', theme.primary);
+                root.style.setProperty('--primary-text', theme.primaryText);
+                root.style.setProperty('--bg', theme.bg);
+                root.style.setProperty('--bg-alt', theme.bgAlt);
+                root.style.setProperty('--border', theme.border);
+                root.style.setProperty('--text', theme.text);
+                root.style.setProperty('--text-muted', theme.textMuted);
+                root.style.setProperty('--input-bg', theme.inputBg);
+                root.style.setProperty('--input-text', theme.inputText);
+                root.style.setProperty('--hover', theme.hover);
+                root.style.setProperty('--active', theme.active);
+
+                themePanel.querySelectorAll('.theme-dot').forEach(dot => {
+                    dot.classList.toggle('active', dot.dataset.theme === themeName);
+                });
+
+                try { localStorage.setItem(THEME_KEY, themeName); } catch (e) {}
+            }
+
+            // ============ 事件绑定（先绑定，后初始化） ============
+
+            // 收缩按钮
+            collapseBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                navbar.classList.add('collapsed');
+            });
+
+            // 展开按钮
+            expandBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                navbar.classList.remove('collapsed');
+            });
+
+            // 主题按钮（伸缩面板）
+            themeToggleBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                themePanel.classList.toggle('open');
+            });
+
+            // 主题色点选择
+            themePanel.querySelectorAll('.theme-dot').forEach(dot => {
+                dot.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    applyTheme(dot.dataset.theme);
+                    themePanel.classList.remove('open');
+                });
+            });
+
+            // 点击外部关闭面板
+            document.addEventListener('click', (e) => {
+                if (themePanel.classList.contains('open') &&
+                    !themePanel.contains(e.target) &&
+                    e.target !== themeToggleBtn) {
+                    themePanel.classList.remove('open');
+                }
+            });
+
+            // ============ 初始化主题 ============
+            let savedTheme = 'blue';
+            try { savedTheme = localStorage.getItem(THEME_KEY) || 'blue'; } catch (e) {}
+            applyTheme(savedTheme);
+
+            // ============ 编辑器初始化 ============
+            let savedContent = null;
+            try { savedContent = localStorage.getItem(STORAGE_KEY); } catch (e) {}
+            if (savedContent !== null) {
+                editor.value = savedContent;
+            }
+            updateStats();
+
+            function updateStats() {
+                const text = editor.value;
+                statsInfo.textContent = `字符数：${text.length} | 行数：${text.split('\n').length}`;
+            }
+
+            function autoSave() {
+                saveStatus.textContent = '保存中...';
+                saveStatus.style.color = '#888888';
+                clearTimeout(saveTimer);
+                saveTimer = setTimeout(() => {
+                    try {
+                        localStorage.setItem(STORAGE_KEY, editor.value);
+                        saveStatus.textContent = '✓ 已保存';
+                        saveStatus.style.color = '';
+                    } catch (e) {
+                        saveStatus.textContent = '⚠ 保存失败';
+                        saveStatus.style.color = '#cc0000';
+                    }
+                }, 300);
+            }
+
+            editor.addEventListener('input', () => {
+                updateStats();
+                autoSave();
+            });
+
+            clearBtn.addEventListener('click', () => {
+                if (editor.value === '') return;
+                if (confirm('确定要清空编辑器内容吗？此操作不可撤销。')) {
+                    editor.value = '';
+                    updateStats();
+                    autoSave();
+                    editor.focus();
+                }
+            });
+
+            copyBtn.addEventListener('click', () => {
+                if (editor.value === '') {
+                    alert('编辑器是空的，没有内容可复制。');
+                    return;
+                }
+                navigator.clipboard.writeText(editor.value)
+                    .then(() => {
+                        const originalText = copyBtn.textContent;
+                        copyBtn.textContent = '✓ 已复制';
+                        setTimeout(() => { copyBtn.textContent = originalText; }, 1200);
+                    })
+                    .catch(() => {
+                        editor.select();
+                        document.execCommand('copy');
+                        alert('已复制全文到剪贴板。');
+                    });
+            });
+
+            downloadBtn.addEventListener('click', () => {
+                if (editor.value === '') {
+                    alert('编辑器是空的，没有内容可下载。');
+                    return;
+                }
+                const blob = new Blob([editor.value], { type: 'text/plain;charset=utf-8' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                const now = new Date();
+                const timestamp = `${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, '0')}${String(now.getDate()).padStart(2, '0')}_${String(now.getHours()).padStart(2, '0')}${String(now.getMinutes()).padStart(2, '0')}`;
+                a.href = url;
+                a.download = `NorArts_${timestamp}.txt`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+            });
+
+            printBtn.addEventListener('click', () => {
+                if (editor.value.trim() === '') {
+                    alert('编辑器是空的，没有内容可打印。');
+                    return;
+                }
+                printContent.textContent = editor.value;
+                window.print();
+                setTimeout(() => { printContent.textContent = ''; }, 100);
+            });
+
+            window.addEventListener('beforeunload', () => {
+                if (editor.value) {
+                    try { localStorage.setItem(STORAGE_KEY, editor.value); } catch (e) {}
+                }
+            });
+        });
+    </script>
+</body>
+</html>
