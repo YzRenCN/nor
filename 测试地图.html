@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nor Map - 地图工具</title>
+    <style>
+        /* 全局重置 */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html, body {
+            height: 100%;
+            width: 100%;
+            overflow: hidden;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", Arial, sans-serif;
+            background-color: #ffffff;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* ================= 顶部导航栏 ================= */
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            height: 64px;
+            padding: 0 28px;
+            border-bottom: 1px solid #000000;
+            background-color: #fff;
+            flex-shrink: 0;
+            z-index: 10;
+        }
+
+        .logo-section {
+            display: flex;
+            align-items: center;
+            text-decoration: none;
+        }
+
+        .logo-icon {
+            height: 36px;
+            width: auto;
+            margin-right: 10px;
+        }
+
+        .logo-text {
+            font-size: 24px;
+            font-weight: 800;
+            color: #3b4cca;
+            letter-spacing: 0.5px;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 24px;
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            font-size: 18px;
+            font-weight: 700;
+            color: #3b4cca;
+            transition: opacity 0.2s;
+        }
+
+        .nav-links a:hover {
+            opacity: 0.7;
+        }
+
+        /* ================= 主体内容区 ================= */
+        .main-content {
+            flex: 1;
+            position: relative;
+            overflow: hidden;
+            min-height: 0; /* 关键：确保 flex 子项能正确计算高度 */
+        }
+
+        #mapContainer {
+            width: 100%;
+            height: 100%;
+            background-color: #f0f0f0;
+        }
+
+        /* ================= 工具栏（右上角悬浮） ================= */
+        .toolbar {
+            position: absolute;
+            top: 16px;
+            right: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            z-index: 100;
+        }
+
+        .tool-btn {
+            width: 44px;
+            height: 44px;
+            background-color: #ffffff;
+            border: 2px solid #000000;
+            border-radius: 6px;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 18px;
+            transition: all 0.15s ease;
+            box-shadow: 3px 3px 0px #3b4cca;
+            padding: 0;
+            color: #000000;
+        }
+
+        .tool-btn:hover {
+            background-color: #f0f0ff;
+            transform: translate(-1px, -1px);
+            box-shadow: 4px 4px 0px #3b4cca;
+        }
+
+        .tool-btn:active {
+            transform: translate(2px, 2px);
+            box-shadow: 1px 1px 0px #3b4cca;
+        }
+
+        .tool-btn.active {
+            background-color: #3b4cca;
+            color: #ffffff;
+        }
+
+        /* ================= 底部状态栏 ================= */
+        .footer {
+            padding: 8px 28px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: #fff;
+            flex-shrink: 0;
+            border-top: 1px solid #000000;
+            font-size: 13px;
+            color: #555555;
+            gap: 16px;
+            flex-wrap: wrap;
+            z-index: 10;
+        }
+
+        .copyright {
+            font-size: 14px;
+            font-weight: 700;
+            color: #3b4cca;
+            letter-spacing: 0.5px;
+        }
+
+        .map-info {
+            display: flex;
+            gap: 18px;
+            flex-wrap: wrap;
+            font-weight: 500;
+            color: #888888;
+        }
+
+        .map-info span {
+            white-space: nowrap;
+        }
+
+        .map-info strong {
+            color: #3b4cca;
+            font-weight: 800;
+        }
+
+        /* 隐藏天地图默认版权控件 */
+        .BMap_cpyCtrl,
+        .anchorBL {
+            display: none !important;
+        }
+
+        /* ================= 手机端适配 ================= */
+        @media (max-width: 768px) {
+            .navbar {
+                flex-direction: column;
+                height: auto;
+                padding: 10px 14px;
+                gap: 6px;
+            }
+
+            .logo-icon {
+                height: 28px;
+                margin-right: 8px;
+            }
+
+            .logo-text {
+                font-size: 20px;
+            }
+
+            .nav-links {
+                gap: 16px;
+            }
+
+            .nav-links a {
+                font-size: 15px;
+            }
+
+            .toolbar {
+                top: 10px;
+                right: 10px;
+                gap: 4px;
+            }
+
+            .tool-btn {
+                width: 38px;
+                height: 38px;
+                font-size: 15px;
+            }
+
+            .footer {
+                padding: 6px 14px;
+                font-size: 11px;
+            }
+
+            .map-info {
+                gap: 10px;
+            }
+
+            .copyright {
+                font-size: 12px;
+            }
+        }
+
+    </style>
+</head>
+<body>
+
+    <!-- 导航栏 -->
+    <header class="navbar">
+        <div class="logo-section">
+            <img src="logo.png" alt="Nor Logo" class="logo-icon" onerror="this.style.display='none'">
+            <span class="logo-text">Nor Map</span>
+        </div>
+        <nav class="nav-links">
+            <a href="#">更多</a>
+            <a href="#">发现</a>
+            <a href="#">关于</a>
+        </nav>
+    </header>
+
+    <!-- 主体内容区：地图 -->
+    <main class="main-content">
+        <div id="mapContainer"></div>
+
+        <!-- 工具栏 -->
+        <div class="toolbar">
+            <button class="tool-btn" id="markerModeBtn" title="标记模式">📌</button>
+            <button class="tool-btn" id="clearMarkersBtn" title="清空标记">🗑️</button>
+        </div>
+    </main>
+
+    <!-- 底部状态栏 -->
+    <footer class="footer">
+        <div class="copyright">©NorStudio 2026</div>
+        <div class="map-info">
+            <span>中心：<strong id="centerPos">--, --</strong></span>
+            <span>缩放：<strong id="zoomLevel">--</strong></span>
+            <span>标记：<strong id="markerCount">0</strong></span>
+        </div>
+    </footer>
+
+    <!-- 天地图 API（HTTPS 版本） -->
+    <script src="https://api.tianditu.gov.cn/api?v=4.0&tk=de89a318d0048054a421933a2bf0d014"></script>
+
+    <!-- 地图初始化与交互 -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // ================= DOM 引用 =================
+            const centerPosEl = document.getElementById('centerPos');
+            const zoomEl = document.getElementById('zoomLevel');
+            const markerCountEl = document.getElementById('markerCount');
+            const markerModeBtn = document.getElementById('markerModeBtn');
+            const clearMarkersBtn = document.getElementById('clearMarkersBtn');
+
+            // ================= 检查 API 加载 =================
+            if (typeof T === 'undefined') {
+                console.error('天地图 API 未加载，请检查网络或密钥');
+                alert('天地图 API 加载失败，请检查网络连接后刷新页面');
+                return;
+            }
+
+            // ================= 初始化地图 =================
+            let map;
+            try {
+                map = new T.Map('mapContainer');
+                // 默认中心：北京天安门
+                map.centerAndZoom(new T.LngLat(116.397128, 39.916527), 12);
+
+                // 添加控件
+                map.addControl(new T.Control.Zoom({ position: T_ANCHOR_TOP_RIGHT }));
+                map.addControl(new T.Control.Scale({ position: T_ANCHOR_BOTTOM_LEFT }));
+                map.addControl(new T.Control.MapType({ position: T_ANCHOR_TOP_RIGHT }));
+
+                // 开启交互
+                map.enableScrollWheelZoom();
+                map.enableDoubleClickZoom();
+            } catch (err) {
+                console.error('地图初始化失败：', err);
+                alert('地图初始化失败，请刷新页面重试');
+                return;
+            }
+
+            // ================= 状态变量 =================
+            let markers = [];
+            let markerMode = false;
+
+            // ================= 状态栏更新 =================
+            function updateCenterPos() {
+                const center = map.getCenter();
+                if (center) {
+                    const lng = center.getLng().toFixed(4);
+                    const lat = center.getLat().toFixed(4);
+                    centerPosEl.textContent = `${lng}, ${lat}`;
+                }
+            }
+
+            function updateZoom() {
+                zoomEl.textContent = map.getZoom();
+            }
+
+            function updateMarkerCount() {
+                markerCountEl.textContent = markers.length;
+            }
+
+            // 首次更新
+            updateCenterPos();
+            updateZoom();
+            updateMarkerCount();
+
+            // 地图事件监听
+            map.addEventListener('moveend', updateCenterPos);
+            map.addEventListener('zoomend', updateZoom);
+
+            // ================= 初始标记（天安门） =================
+            const initialMarker = new T.Marker(new T.LngLat(116.397128, 39.916527));
+            map.addOverLay(initialMarker);
+            markers.push(initialMarker);
+            updateMarkerCount();
+
+            // ================= 标记模式开关 =================
+            markerModeBtn.addEventListener('click', () => {
+                markerMode = !markerMode;
+                markerModeBtn.classList.toggle('active', markerMode);
+            });
+
+            // ================= 地图点击事件 =================
+            map.addEventListener('click', (e) => {
+                if (!markerMode) return;
+                const lnglat = e.lnglat;
+                if (!lnglat) return;
+
+                const marker = new T.Marker(lnglat);
+                map.addOverLay(marker);
+                markers.push(marker);
+                updateMarkerCount();
+            });
+
+            // ================= 清空标记 =================
+            clearMarkersBtn.addEventListener('click', () => {
+                if (markers.length === 0) {
+                    alert('没有可清除的标记');
+                    return;
+                }
+                if (confirm('确定要清空所有标记吗？')) {
+                    markers.forEach(m => map.removeOverLay(m));
+                    markers = [];
+                    updateMarkerCount();
+                }
+            });
+
+            // ================= 窗口大小变化时，重绘地图 =================
+            // 使用防抖，避免频繁触发
+            let resizeTimer = null;
+            window.addEventListener('resize', () => {
+                clearTimeout(resizeTimer);
+                resizeTimer = setTimeout(() => {
+                    if (map && typeof map.checkResize === 'function') {
+                        map.checkResize();
+                    }
+                }, 200);
+            });
+
+            // ================= 页面完全加载后，再检测一次尺寸 =================
+            window.addEventListener('load', () => {
+                setTimeout(() => {
+                    if (map && typeof map.checkResize === 'function') {
+                        map.checkResize();
+                    }
+                }, 300);
+            });
+        });
+    </script>
+
+</body>
+</html>
