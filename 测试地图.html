@@ -12,17 +12,13 @@
             box-sizing: border-box;
         }
 
-        html, body {
-            height: 100%;
-            width: 100%;
-            overflow: hidden;
-        }
-
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", Arial, sans-serif;
             background-color: #ffffff;
+            height: 100vh;
             display: flex;
             flex-direction: column;
+            overflow: hidden;
         }
 
         /* ================= 顶部导航栏 ================= */
@@ -74,62 +70,17 @@
             opacity: 0.7;
         }
 
-        /* ================= 主体内容区 ================= */
+        /* ================= 主体内容区：地图 ================= */
         .main-content {
             flex: 1;
             position: relative;
             overflow: hidden;
-            min-height: 0; /* 关键：确保 flex 子项能正确计算高度 */
         }
 
         #mapContainer {
             width: 100%;
             height: 100%;
             background-color: #f0f0f0;
-        }
-
-        /* ================= 工具栏（右上角悬浮） ================= */
-        .toolbar {
-            position: absolute;
-            top: 16px;
-            right: 16px;
-            display: flex;
-            flex-direction: column;
-            gap: 6px;
-            z-index: 100;
-        }
-
-        .tool-btn {
-            width: 44px;
-            height: 44px;
-            background-color: #ffffff;
-            border: 2px solid #000000;
-            border-radius: 6px;
-            cursor: pointer;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-size: 18px;
-            transition: all 0.15s ease;
-            box-shadow: 3px 3px 0px #3b4cca;
-            padding: 0;
-            color: #000000;
-        }
-
-        .tool-btn:hover {
-            background-color: #f0f0ff;
-            transform: translate(-1px, -1px);
-            box-shadow: 4px 4px 0px #3b4cca;
-        }
-
-        .tool-btn:active {
-            transform: translate(2px, 2px);
-            box-shadow: 1px 1px 0px #3b4cca;
-        }
-
-        .tool-btn.active {
-            background-color: #3b4cca;
-            color: #ffffff;
         }
 
         /* ================= 底部状态栏 ================= */
@@ -145,7 +96,6 @@
             color: #555555;
             gap: 16px;
             flex-wrap: wrap;
-            z-index: 10;
         }
 
         .copyright {
@@ -156,23 +106,11 @@
         }
 
         .map-info {
-            display: flex;
-            gap: 18px;
-            flex-wrap: wrap;
             font-weight: 500;
             color: #888888;
         }
 
-        .map-info span {
-            white-space: nowrap;
-        }
-
-        .map-info strong {
-            color: #3b4cca;
-            font-weight: 800;
-        }
-
-        /* 隐藏天地图默认版权控件 */
+        /* 地图控件微调 */
         .BMap_cpyCtrl,
         .anchorBL {
             display: none !important;
@@ -184,7 +122,7 @@
                 flex-direction: column;
                 height: auto;
                 padding: 10px 14px;
-                gap: 6px;
+                gap: 8px;
             }
 
             .logo-icon {
@@ -204,25 +142,9 @@
                 font-size: 15px;
             }
 
-            .toolbar {
-                top: 10px;
-                right: 10px;
-                gap: 4px;
-            }
-
-            .tool-btn {
-                width: 38px;
-                height: 38px;
-                font-size: 15px;
-            }
-
             .footer {
                 padding: 6px 14px;
                 font-size: 11px;
-            }
-
-            .map-info {
-                gap: 10px;
             }
 
             .copyright {
@@ -250,153 +172,80 @@
     <!-- 主体内容区：地图 -->
     <main class="main-content">
         <div id="mapContainer"></div>
-
-        <!-- 工具栏 -->
-        <div class="toolbar">
-            <button class="tool-btn" id="markerModeBtn" title="标记模式">📌</button>
-            <button class="tool-btn" id="clearMarkersBtn" title="清空标记">🗑️</button>
-        </div>
     </main>
 
     <!-- 底部状态栏 -->
     <footer class="footer">
         <div class="copyright">©NorStudio 2026</div>
-        <div class="map-info">
-            <span>中心：<strong id="centerPos">--, --</strong></span>
-            <span>缩放：<strong id="zoomLevel">--</strong></span>
-            <span>标记：<strong id="markerCount">0</strong></span>
-        </div>
+        <div class="map-info" id="mapInfo">天地图 · 加载中...</div>
     </footer>
 
-    <!-- 天地图 API（HTTPS 版本） -->
+    <!-- 天地图 API：引入 JS（key=您的密钥） -->
     <script src="https://api.tianditu.gov.cn/api?v=4.0&tk=de89a318d0048054a421933a2bf0d014"></script>
 
-    <!-- 地图初始化与交互 -->
+    <!-- 初始化地图 -->
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            // ================= DOM 引用 =================
-            const centerPosEl = document.getElementById('centerPos');
-            const zoomEl = document.getElementById('zoomLevel');
-            const markerCountEl = document.getElementById('markerCount');
-            const markerModeBtn = document.getElementById('markerModeBtn');
-            const clearMarkersBtn = document.getElementById('clearMarkersBtn');
+            const mapInfo = document.getElementById('mapInfo');
 
-            // ================= 检查 API 加载 =================
+            // 等待天地图 API 加载完成
             if (typeof T === 'undefined') {
-                console.error('天地图 API 未加载，请检查网络或密钥');
-                alert('天地图 API 加载失败，请检查网络连接后刷新页面');
+                mapInfo.textContent = '天地图 API 加载失败，请检查网络或密钥';
+                console.error('天地图 API 未加载成功');
                 return;
             }
 
-            // ================= 初始化地图 =================
-            let map;
             try {
-                map = new T.Map('mapContainer');
-                // 默认中心：北京天安门
+                // 初始化地图，默认中心点：北京天安门，缩放级别 12
+                const map = new T.Map('mapContainer');
                 map.centerAndZoom(new T.LngLat(116.397128, 39.916527), 12);
 
-                // 添加控件
-                map.addControl(new T.Control.Zoom({ position: T_ANCHOR_TOP_RIGHT }));
-                map.addControl(new T.Control.Scale({ position: T_ANCHOR_BOTTOM_LEFT }));
-                map.addControl(new T.Control.MapType({ position: T_ANCHOR_TOP_RIGHT }));
+                // 添加缩放控件
+                map.addControl(new T.Control.Zoom({
+                    position: T_ANCHOR_TOP_RIGHT
+                }));
 
-                // 开启交互
+                // 添加比例尺控件
+                map.addControl(new T.Control.Scale({
+                    position: T_ANCHOR_BOTTOM_LEFT
+                }));
+
+                // 添加地图类型控件（普通地图 / 卫星）
+                map.addControl(new T.Control.MapType({
+                    position: T_ANCHOR_TOP_RIGHT
+                }));
+
+                // 开启鼠标滚轮缩放
                 map.enableScrollWheelZoom();
+
+                // 开启双击放大
                 map.enableDoubleClickZoom();
-            } catch (err) {
-                console.error('地图初始化失败：', err);
-                alert('地图初始化失败，请刷新页面重试');
-                return;
-            }
 
-            // ================= 状态变量 =================
-            let markers = [];
-            let markerMode = false;
-
-            // ================= 状态栏更新 =================
-            function updateCenterPos() {
-                const center = map.getCenter();
-                if (center) {
-                    const lng = center.getLng().toFixed(4);
-                    const lat = center.getLat().toFixed(4);
-                    centerPosEl.textContent = `${lng}, ${lat}`;
-                }
-            }
-
-            function updateZoom() {
-                zoomEl.textContent = map.getZoom();
-            }
-
-            function updateMarkerCount() {
-                markerCountEl.textContent = markers.length;
-            }
-
-            // 首次更新
-            updateCenterPos();
-            updateZoom();
-            updateMarkerCount();
-
-            // 地图事件监听
-            map.addEventListener('moveend', updateCenterPos);
-            map.addEventListener('zoomend', updateZoom);
-
-            // ================= 初始标记（天安门） =================
-            const initialMarker = new T.Marker(new T.LngLat(116.397128, 39.916527));
-            map.addOverLay(initialMarker);
-            markers.push(initialMarker);
-            updateMarkerCount();
-
-            // ================= 标记模式开关 =================
-            markerModeBtn.addEventListener('click', () => {
-                markerMode = !markerMode;
-                markerModeBtn.classList.toggle('active', markerMode);
-            });
-
-            // ================= 地图点击事件 =================
-            map.addEventListener('click', (e) => {
-                if (!markerMode) return;
-                const lnglat = e.lnglat;
-                if (!lnglat) return;
-
-                const marker = new T.Marker(lnglat);
+                // 添加默认标记（北京天安门）
+                const marker = new T.Marker(new T.LngLat(116.397128, 39.916527));
                 map.addOverLay(marker);
-                markers.push(marker);
-                updateMarkerCount();
-            });
 
-            // ================= 清空标记 =================
-            clearMarkersBtn.addEventListener('click', () => {
-                if (markers.length === 0) {
-                    alert('没有可清除的标记');
-                    return;
-                }
-                if (confirm('确定要清空所有标记吗？')) {
-                    markers.forEach(m => map.removeOverLay(m));
-                    markers = [];
-                    updateMarkerCount();
-                }
-            });
+                // 点击地图获取坐标
+                map.addEventListener('click', (e) => {
+                    const lng = e.lnglat.getLng().toFixed(6);
+                    const lat = e.lnglat.getLat().toFixed(6);
+                    mapInfo.textContent = `经度：${lng}  纬度：${lat}`;
+                });
 
-            // ================= 窗口大小变化时，重绘地图 =================
-            // 使用防抖，避免频繁触发
-            let resizeTimer = null;
-            window.addEventListener('resize', () => {
-                clearTimeout(resizeTimer);
-                resizeTimer = setTimeout(() => {
-                    if (map && typeof map.checkResize === 'function') {
-                        map.checkResize();
-                    }
-                }, 200);
-            });
+                // 加载完成提示
+                mapInfo.textContent = '天地图 · 点击地图获取坐标';
 
-            // ================= 页面完全加载后，再检测一次尺寸 =================
-            window.addEventListener('load', () => {
-                setTimeout(() => {
-                    if (map && typeof map.checkResize === 'function') {
-                        map.checkResize();
-                    }
-                }, 300);
-            });
+                // 监听地图缩放，实时显示当前缩放级别
+                map.addEventListener('zoomend', () => {
+                    const zoom = map.getZoom();
+                    // 保持原提示或显示缩放级别
+                    console.log('当前缩放级别：', zoom);
+                });
+
+            } catch (error) {
+                console.error('地图初始化失败：', error);
+                mapInfo.textContent = '地图初始化失败，请刷新页面重试';
+            }
         });
     </script>
 
