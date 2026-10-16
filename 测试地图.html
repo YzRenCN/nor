@@ -4,181 +4,61 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Nor 地图</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
 
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css" />
+
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html, body { height: 100%; width: 100%; }
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-            background-color: #ffffff;
-            min-height: 100vh;
             display: flex;
             flex-direction: column;
-        }
-
-        /* ================= 顶部导航栏 ================= */
-        .navbar {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            height: 80px;
-            padding: 0 40px;
-            border-bottom: 1px solid #000000;
-            background-color: #fff;
-            flex-shrink: 0;
-            z-index: 1000;
-        }
-
-        .logo-section {
-            display: flex;
-            align-items: center;
-            text-decoration: none;
-        }
-
-        .logo-icon {
-            height: 50px;
-            width: auto;
-            margin-right: 15px;
-        }
-
-        .logo-text {
-            font-size: 32px;
-            font-weight: 800;
-            color: #3b4cca;
-            letter-spacing: 0.5px;
-        }
-
-        .nav-links {
-            display: flex;
-            gap: 30px;
-        }
-
-        .nav-links a {
-            text-decoration: none;
-            font-size: 28px;
-            font-weight: 700;
-            color: #3b4cca;
-        }
-
-        .nav-links a:hover {
-            opacity: 0.8;
-        }
-
-        /* ================= 地图选择栏 ================= */
-        .map-selector {
-            display: flex;
-            align-items: center;
-            gap: 16px;
-            padding: 12px 40px;
-            background-color: #f8f8ff;
-            border-bottom: 1px solid #eaeaea;
-            flex-shrink: 0;
-        }
-
-        .map-selector label {
-            font-size: 18px;
-            font-weight: 700;
-            color: #3b4cca;
-            letter-spacing: 0.5px;
-        }
-
-        .map-selector select {
-            font-family: inherit;
-            font-size: 18px;
-            font-weight: 700;
-            color: #000000;
-            padding: 8px 16px;
-            border: 3px solid #000000;
-            border-radius: 6px;
-            background-color: #ffffff;
-            cursor: pointer;
-            transition: all 0.15s ease;
-            outline: none;
-            min-width: 220px;
-        }
-
-        .map-selector select:hover {
-            border-color: #3b4cca;
-        }
-
-        .map-selector select:focus {
-            border-color: #3b4cca;
-            box-shadow: 3px 3px 0px #3b4cca;
-        }
-
-        /* ================= 地图主体区 ================= */
-        .main-content {
-            flex: 1;
-            position: relative;
             overflow: hidden;
         }
-
-        /* 所有地图容器默认隐藏，只有 active 的显示 */
-        .map-container {
-            display: none;
-            width: 100%;
-            height: 100%;
-            position: absolute;
-            top: 0;
-            left: 0;
+        .navbar {
+            display: flex; justify-content: space-between; align-items: center;
+            height: 64px; padding: 0 28px; border-bottom: 2px solid #000;
+            background: #fff; flex-shrink: 0; z-index: 1000;
         }
+        .logo-text { font-size: 24px; font-weight: 800; color: #3b4cca; }
+        .nav-links { display: flex; gap: 24px; }
+        .nav-links a { text-decoration: none; font-size: 18px; font-weight: 700; color: #3b4cca; }
 
-        .map-container.active {
-            display: block;
+        .map-selector {
+            display: flex; align-items: center; gap: 14px;
+            padding: 10px 28px; background: #f8f8ff;
+            border-bottom: 1px solid #eaeaea; flex-shrink: 0;
         }
+        .map-selector label { font-size: 16px; font-weight: 700; color: #3b4cca; }
+        .map-selector select {
+            font-family: inherit; font-size: 16px; font-weight: 700;
+            padding: 8px 14px; border: 2px solid #000; border-radius: 6px;
+            background: #fff; cursor: pointer; outline: none; min-width: 180px;
+        }
+        .map-selector select:focus { border-color: #3b4cca; box-shadow: 2px 2px 0 #3b4cca; }
 
-        /* ================= 手机端适配 ================= */
+        .main-content { flex: 1; position: relative; min-height: 0; overflow: hidden; }
+        .map-container { position: absolute; top: 0; left: 0; right: 0; bottom: 0; display: none; }
+        .map-container.active { display: block; }
+        #tiandituMap { background-color: #f0f0f0; }
+
         @media (max-width: 768px) {
-            .navbar {
-                flex-direction: column;
-                height: auto;
-                padding: 12px 16px;
-                gap: 8px;
-            }
-
-            .logo-icon {
-                height: 36px;
-                margin-right: 10px;
-            }
-
-            .logo-text {
-                font-size: 24px;
-            }
-
-            .nav-links {
-                gap: 18px;
-            }
-
-            .nav-links a {
-                font-size: 18px;
-            }
-
-            .map-selector {
-                padding: 10px 16px;
-                gap: 10px;
-            }
-
-            .map-selector label {
-                font-size: 15px;
-            }
-
-            .map-selector select {
-                font-size: 15px;
-                padding: 6px 12px;
-                min-width: 160px;
-            }
+            .navbar { flex-direction: column; height: auto; padding: 10px 16px; gap: 8px; }
+            .logo-text { font-size: 20px; }
+            .nav-links { gap: 16px; }
+            .nav-links a { font-size: 15px; }
+            .map-selector { padding: 8px 16px; gap: 10px; }
+            .map-selector label { font-size: 14px; }
+            .map-selector select { font-size: 14px; padding: 6px 10px; min-width: 140px; }
         }
     </style>
 </head>
 <body>
 
-    <!-- 导航栏 -->
     <header class="navbar">
         <div class="logo-section">
-            <img src="logo.png" alt="Nor Logo" class="logo-icon" onerror="this.style.display='none'">
             <span class="logo-text">Nor 地图</span>
         </div>
         <nav class="nav-links">
@@ -188,126 +68,175 @@
         </nav>
     </header>
 
-    <!-- 地图选择栏 -->
     <div class="map-selector">
         <label for="mapSelect">选择地图：</label>
         <select id="mapSelect">
             <option value="tianditu">天地图</option>
-            <option value="osm">OpenStreetMap</option>
+            <option value="leaflet">Leaflet</option>
             <option value="maplibre">MapLibre</option>
         </select>
     </div>
 
-    <!-- 地图主体区 -->
     <main class="main-content">
         <div id="tiandituMap" class="map-container active"></div>
-        <div id="osmMap" class="map-container"></div>
+        <div id="leafletMap" class="map-container"></div>
         <div id="maplibreMap" class="map-container"></div>
     </main>
 
-    <!-- 天地图 API -->
+    <!-- 1. 天地图 -->
     <script src="https://api.tianditu.gov.cn/api?v=4.0&tk=de89a318d0048054a421933a2bf0d014"></script>
-
-    <!-- OpenStreetMap 使用 Leaflet 作为地图库 -->
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <!-- 2. Leaflet -->
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-
-    <!-- MapLibre GL JS -->
+    <!-- 3. MapLibre GL -->
     <script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
-    <link href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css" rel="stylesheet" />
+    <!-- 4. maplibre-gl-leaflet 插件 -->
+    <script src="https://unpkg.com/@maplibre/maplibre-gl-leaflet@0.0.20/leaflet-maplibre-gl.js"></script>
 
     <script>
-        window.addEventListener('load', function () {
+    (function () {
+        'use strict';
 
-            // 中心点：北京天安门
-            var centerLng = 116.397;
-            var centerLat = 39.908;
+        var CENTER_LNG = 116.397;
+        var CENTER_LAT = 39.908;
+        var ZOOM = 12;
 
-            // ================= 1. 天地图 =================
-            var tdtMap = null;
-            if (typeof T !== 'undefined') {
-                tdtMap = new T.Map('tiandituMap');
-                tdtMap.centerAndZoom(new T.LngLat(centerLng, centerLat), 12);
-                tdtMap.enableScrollWheelZoom();
-            } else {
-                console.warn('天地图 API 未加载');
+        var tdtMap = null;
+        var leafletMap = null;
+        var maplibreMap = null;
+
+        var containers = {
+            tianditu: document.getElementById('tiandituMap'),
+            leaflet: document.getElementById('leafletMap'),
+            maplibre: document.getElementById('maplibreMap')
+        };
+
+        // ===================== 天地图 =====================
+        function initTianditu() {
+            if (tdtMap) return;
+            if (typeof T === 'undefined') {
+                containers.tianditu.innerHTML = '<p style="padding:20px;color:#c00;">天地图 API 未加载。</p>';
+                return;
             }
+            try {
+                tdtMap = new T.Map('tiandituMap');
+                tdtMap.centerAndZoom(new T.LngLat(CENTER_LNG, CENTER_LAT), ZOOM);
+                tdtMap.enableScrollWheelZoom();
 
-            // ================= 2. OpenStreetMap（Leaflet） =================
-            var osmMap = L.map('osmMap', {
-                center: [centerLat, centerLng],
-                zoom: 12,
-                zoomControl: true
-            });
+                var zoomCtrl = new T.Control.Zoom();
+                zoomCtrl.setPosition(T_ANCHOR_TOP_LEFT);
+                tdtMap.addControl(zoomCtrl);
 
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                attribution: '© OpenStreetMap contributors',
-                maxZoom: 19
-            }).addTo(osmMap);
+                var scaleCtrl = new T.Control.Scale();
+                scaleCtrl.setPosition(T_ANCHOR_BOTTOM_LEFT);
+                tdtMap.addControl(scaleCtrl);
 
-            // ================= 3. MapLibre GL JS =================
-            var maplibreMap = new maplibregl.Map({
-                container: 'maplibreMap',
-                style: {
-                    version: 8,
-                    sources: {
-                        'osm-tiles': {
-                            type: 'raster',
-                            tiles: [
-                                'https://tile.openstreetmap.org/{z}/{x}/{y}.png'
-                            ],
-                            tileSize: 256,
-                            attribution: '© OpenStreetMap contributors'
-                        }
-                    },
-                    layers: [
-                        {
-                            id: 'osm-layer',
-                            type: 'raster',
-                            source: 'osm-tiles',
-                            minzoom: 0,
-                            maxzoom: 19
-                        }
-                    ]
-                },
-                center: [centerLng, centerLat],
-                zoom: 12
-            });
+                var typeCtrl = new T.Control.MapType();
+                typeCtrl.setPosition(T_ANCHOR_TOP_RIGHT);
+                tdtMap.addControl(typeCtrl);
+            } catch (e) {
+                console.error('天地图初始化异常：', e);
+            }
+        }
 
-            // ================= 地图切换逻辑 =================
-            var select = document.getElementById('mapSelect');
-            var containers = {
-                tianditu: document.getElementById('tiandituMap'),
-                osm: document.getElementById('osmMap'),
-                maplibre: document.getElementById('maplibreMap')
-            };
-
-            select.addEventListener('change', function () {
-                var selected = this.value;
-
-                // 隐藏所有地图容器
-                Object.keys(containers).forEach(function (key) {
-                    containers[key].classList.remove('active');
+        // ===================== Leaflet =====================
+        function initLeaflet() {
+            if (leafletMap) return;
+            if (typeof L === 'undefined') {
+                containers.leaflet.innerHTML = '<p style="padding:20px;color:#c00;">Leaflet 未加载。</p>';
+                return;
+            }
+            if (typeof L.maplibreGL === 'undefined') {
+                containers.leaflet.innerHTML = '<p style="padding:20px;color:#c00;">maplibre-gl-leaflet 插件未加载。</p>';
+                return;
+            }
+            try {
+                leafletMap = L.map('leafletMap', {
+                    center: [CENTER_LAT, CENTER_LNG],
+                    zoom: ZOOM,
+                    zoomControl: true
                 });
 
-                // 显示选中的地图容器
-                containers[selected].classList.add('active');
+                L.maplibreGL({
+                    style: 'https://tiles.openfreemap.org/styles/liberty'
+                }).addTo(leafletMap);
 
-                // 重新调整地图尺寸（因为容器从 display:none 变为显示后，地图需要重新计算尺寸）
-                if (selected === 'tianditu' && tdtMap) {
-                    // 天地图无需特殊处理，会自动适配
-                } else if (selected === 'osm' && osmMap) {
-                    setTimeout(function () {
-                        osmMap.invalidateSize();
-                    }, 50);
-                } else if (selected === 'maplibre' && maplibreMap) {
-                    setTimeout(function () {
-                        maplibreMap.resize();
-                    }, 50);
-                }
+                setTimeout(function () { leafletMap.invalidateSize(); }, 100);
+            } catch (e) {
+                console.error('Leaflet 初始化异常：', e);
+            }
+        }
+
+        // ===================== MapLibre =====================
+        function initMapLibre() {
+            if (maplibreMap) return;
+            if (typeof maplibregl === 'undefined') {
+                containers.maplibre.innerHTML = '<p style="padding:20px;color:#c00;">MapLibre GL 未加载。</p>';
+                return;
+            }
+            try {
+                maplibreMap = new maplibregl.Map({
+                    container: 'maplibreMap',
+                    style: 'https://tiles.openfreemap.org/styles/liberty',
+                    center: [CENTER_LNG, CENTER_LAT],
+                    zoom: ZOOM
+                });
+
+                maplibreMap.addControl(new maplibregl.NavigationControl(), 'top-left');
+
+                setTimeout(function () { maplibreMap.resize(); }, 100);
+            } catch (e) {
+                console.error('MapLibre 初始化异常：', e);
+            }
+        }
+
+        // ===================== 切换 =====================
+        function switchMap(name) {
+            Object.keys(containers).forEach(function (k) {
+                containers[k].classList.remove('active');
             });
+            containers[name].classList.add('active');
 
+            setTimeout(function () {
+                if (name === 'tianditu') {
+                    initTianditu();
+                } else if (name === 'leaflet') {
+                    if (!leafletMap) initLeaflet();
+                    else leafletMap.invalidateSize();
+                } else if (name === 'maplibre') {
+                    if (!maplibreMap) initMapLibre();
+                    else maplibreMap.resize();
+                }
+            }, 60);
+        }
+
+        // ===================== 根据浏览器语言选择默认地图 =====================
+        function getDefaultMap() {
+            var lang = (navigator.language || navigator.userLanguage || 'en').toLowerCase();
+            if (lang.startsWith('zh')) {
+                return 'tianditu';
+            }
+            return 'maplibre';
+        }
+
+        // ===================== 初始化 =====================
+        document.getElementById('mapSelect').addEventListener('change', function () {
+            switchMap(this.value);
         });
+
+        window.addEventListener('load', function () {
+            var defaultMap = getDefaultMap();
+            document.getElementById('mapSelect').value = defaultMap;
+            switchMap(defaultMap);
+        });
+
+        window.addEventListener('resize', function () {
+            var active = document.querySelector('.map-container.active');
+            if (!active) return;
+            if (active.id === 'leafletMap' && leafletMap) leafletMap.invalidateSize();
+            else if (active.id === 'maplibreMap' && maplibreMap) maplibreMap.resize();
+        });
+
+    })();
     </script>
 
 </body>
