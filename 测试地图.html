@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nor Map - 地图工具</title>
+    <title>Nor 地图</title>
     <style>
         /* 全局重置 */
         * {
@@ -13,12 +13,11 @@
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", Arial, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
             background-color: #ffffff;
-            height: 100vh;
+            min-height: 100vh;
             display: flex;
             flex-direction: column;
-            overflow: hidden;
         }
 
         /* ================= 顶部导航栏 ================= */
@@ -26,12 +25,12 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            height: 64px;
-            padding: 0 28px;
+            height: 80px;
+            padding: 0 40px;
             border-bottom: 1px solid #000000;
             background-color: #fff;
             flex-shrink: 0;
-            z-index: 10;
+            z-index: 1000;
         }
 
         .logo-section {
@@ -41,13 +40,13 @@
         }
 
         .logo-icon {
-            height: 36px;
+            height: 50px;
             width: auto;
-            margin-right: 10px;
+            margin-right: 15px;
         }
 
         .logo-text {
-            font-size: 24px;
+            font-size: 32px;
             font-weight: 800;
             color: #3b4cca;
             letter-spacing: 0.5px;
@@ -55,65 +54,34 @@
 
         .nav-links {
             display: flex;
-            gap: 24px;
+            gap: 30px;
         }
 
         .nav-links a {
             text-decoration: none;
-            font-size: 18px;
+            font-size: 28px;
             font-weight: 700;
             color: #3b4cca;
-            transition: opacity 0.2s;
         }
 
         .nav-links a:hover {
-            opacity: 0.7;
+            opacity: 0.8;
         }
 
-        /* ================= 主体内容区：地图 ================= */
+        /* ================= 地图主体区 ================= */
         .main-content {
             flex: 1;
             position: relative;
             overflow: hidden;
         }
 
+        /* 地图容器：占满剩余区域 */
         #mapContainer {
             width: 100%;
             height: 100%;
-            background-color: #f0f0f0;
-        }
-
-        /* ================= 底部状态栏 ================= */
-        .footer {
-            padding: 8px 28px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            background-color: #fff;
-            flex-shrink: 0;
-            border-top: 1px solid #000000;
-            font-size: 13px;
-            color: #555555;
-            gap: 16px;
-            flex-wrap: wrap;
-        }
-
-        .copyright {
-            font-size: 14px;
-            font-weight: 700;
-            color: #3b4cca;
-            letter-spacing: 0.5px;
-        }
-
-        .map-info {
-            font-weight: 500;
-            color: #888888;
-        }
-
-        /* 地图控件微调 */
-        .BMap_cpyCtrl,
-        .anchorBL {
-            display: none !important;
+            position: absolute;
+            top: 0;
+            left: 0;
         }
 
         /* ================= 手机端适配 ================= */
@@ -121,37 +89,27 @@
             .navbar {
                 flex-direction: column;
                 height: auto;
-                padding: 10px 14px;
+                padding: 12px 16px;
                 gap: 8px;
             }
 
             .logo-icon {
-                height: 28px;
-                margin-right: 8px;
+                height: 36px;
+                margin-right: 10px;
             }
 
             .logo-text {
-                font-size: 20px;
+                font-size: 24px;
             }
 
             .nav-links {
-                gap: 16px;
+                gap: 18px;
             }
 
             .nav-links a {
-                font-size: 15px;
-            }
-
-            .footer {
-                padding: 6px 14px;
-                font-size: 11px;
-            }
-
-            .copyright {
-                font-size: 12px;
+                font-size: 18px;
             }
         }
-
     </style>
 </head>
 <body>
@@ -160,7 +118,7 @@
     <header class="navbar">
         <div class="logo-section">
             <img src="logo.png" alt="Nor Logo" class="logo-icon" onerror="this.style.display='none'">
-            <span class="logo-text">Nor Map</span>
+            <span class="logo-text">Nor 地图</span>
         </div>
         <nav class="nav-links">
             <a href="#">更多</a>
@@ -169,84 +127,50 @@
         </nav>
     </header>
 
-    <!-- 主体内容区：地图 -->
+    <!-- 地图主体区 -->
     <main class="main-content">
         <div id="mapContainer"></div>
     </main>
 
-    <!-- 底部状态栏 -->
-    <footer class="footer">
-        <div class="copyright">©NorStudio 2026</div>
-        <div class="map-info" id="mapInfo">天地图 · 加载中...</div>
-    </footer>
-
-    <!-- 天地图 API：引入 JS（key=您的密钥） -->
+    <!-- 天地图 API -->
     <script src="https://api.tianditu.gov.cn/api?v=4.0&tk=de89a318d0048054a421933a2bf0d014"></script>
-
-    <!-- 初始化地图 -->
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const mapInfo = document.getElementById('mapInfo');
-
-            // 等待天地图 API 加载完成
+        // 初始化天地图
+        function initMap() {
+            // 检查 API 是否加载成功
             if (typeof T === 'undefined') {
-                mapInfo.textContent = '天地图 API 加载失败，请检查网络或密钥';
-                console.error('天地图 API 未加载成功');
+                console.error('天地图 API 加载失败，请检查网络或密钥。');
                 return;
             }
 
-            try {
-                // 初始化地图，默认中心点：北京天安门，缩放级别 12
-                const map = new T.Map('mapContainer');
-                map.centerAndZoom(new T.LngLat(116.397128, 39.916527), 12);
+            // 创建地图实例
+            const map = new T.Map('mapContainer');
 
-                // 添加缩放控件
-                map.addControl(new T.Control.Zoom({
-                    position: T_ANCHOR_TOP_RIGHT
-                }));
+            // 设置中心点（默认北京天安门：116.397, 39.908）和缩放级别
+            const centerPoint = new T.LngLat(116.397, 39.908);
+            map.centerAndZoom(centerPoint, 12);
 
-                // 添加比例尺控件
-                map.addControl(new T.Control.Scale({
-                    position: T_ANCHOR_BOTTOM_LEFT
-                }));
+            // 启用鼠标滚轮缩放
+            map.enableScrollWheelZoom();
 
-                // 添加地图类型控件（普通地图 / 卫星）
-                map.addControl(new T.Control.MapType({
-                    position: T_ANCHOR_TOP_RIGHT
-                }));
+            // 添加地图类型控件（右上角）
+            const ctrl = new T.Control.MapType();
+            ctrl.setPosition(T_ANCHOR_TOP_RIGHT);
+            map.addControl(ctrl);
 
-                // 开启鼠标滚轮缩放
-                map.enableScrollWheelZoom();
+            // 添加缩放控件（左上角）
+            const zoomCtrl = new T.Control.Zoom();
+            zoomCtrl.setPosition(T_ANCHOR_TOP_LEFT);
+            map.addControl(zoomCtrl);
 
-                // 开启双击放大
-                map.enableDoubleClickZoom();
+            // 添加比例尺控件（左下角）
+            const scaleCtrl = new T.Control.Scale();
+            scaleCtrl.setPosition(T_ANCHOR_BOTTOM_LEFT);
+            map.addControl(scaleCtrl);
+        }
 
-                // 添加默认标记（北京天安门）
-                const marker = new T.Marker(new T.LngLat(116.397128, 39.916527));
-                map.addOverLay(marker);
-
-                // 点击地图获取坐标
-                map.addEventListener('click', (e) => {
-                    const lng = e.lnglat.getLng().toFixed(6);
-                    const lat = e.lnglat.getLat().toFixed(6);
-                    mapInfo.textContent = `经度：${lng}  纬度：${lat}`;
-                });
-
-                // 加载完成提示
-                mapInfo.textContent = '天地图 · 点击地图获取坐标';
-
-                // 监听地图缩放，实时显示当前缩放级别
-                map.addEventListener('zoomend', () => {
-                    const zoom = map.getZoom();
-                    // 保持原提示或显示缩放级别
-                    console.log('当前缩放级别：', zoom);
-                });
-
-            } catch (error) {
-                console.error('地图初始化失败：', error);
-                mapInfo.textContent = '地图初始化失败，请刷新页面重试';
-            }
-        });
+        // 页面加载完成后初始化地图
+        window.addEventListener('load', initMap);
     </script>
 
 </body>
