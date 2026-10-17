@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nortbook Word 编辑器</title>
+    <!-- SuperDoc 样式 -->
+    <link rel="stylesheet" href="https://unpkg.com/superdoc/dist/style.css" />
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        html, body {
+            height: 100%;
+            font-family: "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, Arial, sans-serif;
+        }
+        body {
+            display: flex;
+            flex-direction: column;
+            background-color: #f3f3f3;
+        }
+        /* 简易工具栏 */
+        .toolbar {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            background: #fff;
+            border-bottom: 1px solid #e0e0e0;
+            flex-shrink: 0;
+        }
+        .toolbar button {
+            padding: 6px 14px;
+            font-size: 13px;
+            font-weight: 600;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            background: #fff;
+            cursor: pointer;
+            transition: background 0.15s;
+        }
+        .toolbar button:hover {
+            background: #f0f0f0;
+        }
+        .toolbar .brand {
+            font-weight: 900;
+            color: #3b4cca;
+            font-size: 16px;
+            margin-right: 16px;
+        }
+        /* 编辑器容器 */
+        #superdoc {
+            flex: 1;
+            overflow: auto;
+            background: #e8eaed;
+        }
+        /* 隐藏 SuperDoc 自带工具栏（我们用自定义的） */
+        .superdoc-toolbar {
+            display: none !important;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- 简易工具栏 -->
+    <div class="toolbar">
+        <span class="brand">Nortbook</span>
+        <button id="newBtn">新建</button>
+        <button id="openBtn">打开 .docx</button>
+        <button id="saveBtn">导出 .docx</button>
+        <input type="file" id="fileInput" accept=".docx" style="display: none;" />
+    </div>
+
+    <!-- SuperDoc 编辑器挂载点 -->
+    <div id="superdoc"></div>
+
+    <!-- SuperDoc 脚本 -->
+    <script type="module">
+        import { SuperDoc } from 'https://unpkg.com/superdoc/dist/superdoc.umd.js';
+
+        // 初始化 SuperDoc
+        const superdoc = new SuperDoc({
+            selector: '#superdoc',
+            documentMode: 'editing',
+            pagination: true,
+            rulers: true,
+            // 不传 document 参数则创建空白文档
+            onReady: (event) => {
+                console.log('编辑器已就绪');
+            }
+        });
+
+        // ========== 新建文档 ==========
+        document.getElementById('newBtn').addEventListener('click', () => {
+            // 重新初始化以创建空白文档
+            location.reload();
+        });
+
+        // ========== 打开 .docx 文件 ==========
+        const fileInput = document.getElementById('fileInput');
+        document.getElementById('openBtn').addEventListener('click', () => {
+            fileInput.click();
+        });
+
+        fileInput.addEventListener('change', async (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            // 读取文件为 ArrayBuffer
+            const buffer = await file.arrayBuffer();
+
+            // SuperDoc 支持直接传入 File 对象或 ArrayBuffer
+            // 重新创建一个实例并加载文件
+            const container = document.getElementById('superdoc');
+            container.innerHTML = ''; // 清空旧实例
+
+            // 注意：SuperDoc 官方示例中 document 参数可接受 File 或 URL
+            new SuperDoc({
+                selector: '#superdoc',
+                documentMode: 'editing',
+                pagination: true,
+                rulers: true,
+                document: file, // 直接传 File 对象
+                onReady: () => console.log('文件已加载')
+            });
+        });
+
+        // ========== 导出 .docx ==========
+        document.getElementById('saveBtn').addEventListener('click', async () => {
+            try {
+                // SuperDoc 的导出 API
+                const blob = await superdoc.export();
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'Nortbook_Document.docx';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+            } catch (err) {
+                console.error('导出失败：', err);
+                alert('导出失败，请检查控制台。');
+            }
+        });
+    </script>
+
+</body>
+</html>
